@@ -16,6 +16,14 @@ export function DrawingCanvas() {
   const [selectionBox, setSelectionBox] = useState<{ start: Point; end: Point } | null>(null);
   const [laserElements, setLaserElements] = useState<DrawingElement[]>([]);
   
+  // Resize state
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState<string | null>(null); // 'nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'
+  const [resizeStartBounds, setResizeStartBounds] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [resizeStartPoint, setResizeStartPoint] = useState<Point | null>(null);
+  const [resizeStartElements, setResizeStartElements] = useState<DrawingElement[]>([]); // Store original elements
+  const [hoveredHandle, setHoveredHandle] = useState<string | null>(null); // Track hovered resize handle
+  
   // Text editing state
   const [textEdit, setTextEdit] = useState<{
     canvasPoint: Point;
@@ -368,7 +376,18 @@ export function DrawingCanvas() {
           const fontSize = element.fontSize || 16;
           ctx.font = `${fontSize}px sans-serif`;
           ctx.fillStyle = element.color;
-          ctx.fillText(element.text, element.points[0].x, element.points[0].y);
+          
+          // Split text by newlines and render each line
+          const lines = element.text.split('\n');
+          const lineHeight = fontSize * 1.5; // Line spacing
+          
+          lines.forEach((line, index) => {
+            ctx.fillText(
+              line, 
+              element.points[0].x, 
+              element.points[0].y + (index * lineHeight)
+            );
+          });
         }
         break;
     }
@@ -380,6 +399,18 @@ export function DrawingCanvas() {
       ctx.lineWidth = 2 / zoom;
       ctx.setLineDash([5, 5]);
       ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+      
+      // Draw resize handles for selected elements
+      const handles = getResizeHandles(bounds);
+      ctx.fillStyle = '#3B82F6';
+      ctx.setLineDash([]);
+      
+      Object.values(handles).forEach(handle => {
+        ctx.fillRect(handle.x, handle.y, handle.width, handle.height);
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1 / zoom;
+        ctx.strokeRect(handle.x, handle.y, handle.width, handle.height);
+      });
     }
 
     ctx.restore();
@@ -393,27 +424,42 @@ export function DrawingCanvas() {
         const ctx = canvas.getContext('2d');
         if (ctx) {
           const fontSize = element.fontSize || 16;
+          const lineHeight = fontSize * 1.5;
           ctx.font = `${fontSize}px sans-serif`;
-          const metrics = ctx.measureText(element.text);
-          const textWidth = metrics.width;
-          const textHeight = fontSize; // Approximate height
+          
+          // Split text by newlines
+          const lines = element.text.split('\n');
+          
+          // Measure each line to find the widest
+          let maxWidth = 0;
+          lines.forEach(line => {
+            const metrics = ctx.measureText(line);
+            if (metrics.width > maxWidth) {
+              maxWidth = metrics.width;
+            }
+          });
+          
+          const textHeight = lines.length * lineHeight;
           
           return {
             x: element.points[0].x - 5,
-            y: element.points[0].y - textHeight - 5,
-            width: textWidth + 10,
+            y: element.points[0].y - fontSize - 5,
+            width: maxWidth + 10,
             height: textHeight + 10,
           };
         }
       }
       // Fallback if canvas context is not available
       const fontSize = element.fontSize || 16;
-      const approxWidth = (element.text.length * fontSize * 0.6); // Rough estimate
+      const lineHeight = fontSize * 1.5;
+      const lines = element.text.split('\n');
+      const longestLine = lines.reduce((a, b) => a.length > b.length ? a : b, '');
+      const approxWidth = (longestLine.length * fontSize * 0.6); // Rough estimate
       return {
         x: element.points[0].x - 5,
         y: element.points[0].y - fontSize - 5,
         width: approxWidth + 10,
-        height: fontSize + 10,
+        height: (lines.length * lineHeight) + 10,
       };
     }
     
@@ -450,6 +496,72 @@ export function DrawingCanvas() {
     };
   };
 
+  // Get resize handles for a bounds
+  const getResizeHandles = (bounds: { x: number; y: number; width: number; height: number }) => {
+    const handleSize = 8 / zoom; // Size of resize handles
+    const { x, y, width, height } = bounds;
+    
+    return {
+      nw: { x: x - handleSize / 2, y: y - handleSize / 2, width: handleSize, height: handleSize },
+      n:  { x: x + width / 2 - handleSize / 2, y: y - handleSize / 2, width: handleSize, height: handleSize },
+      ne: { x: x + width - handleSize / 2, y: y - handleSize / 2, width: handleSize, height: handleSize },
+      e:  { x: x + width - handleSize / 2, y: y + height / 2 - handleSize / 2, width: handleSize, height: handleSize },
+      se: { x: x + width - handleSize / 2, y: y + height - handleSize / 2, width: handleSize, height: handleSize },
+      s:  { x: x + width / 2 - handleSize / 2, y: y + height - handleSize / 2, width: handleSize, height: handleSize },
+      sw: { x: x - handleSize / 2, y: y + height - handleSize / 2, width: handleSize, height: handleSize },
+      w:  { x: x - handleSize / 2, y: y + height / 2 - handleSize / 2, width: handleSize, height: handleSize },
+    };
+  };
+
+  // Check if a point is on a resize handle
+  const getResizeHandleAtPoint = (point: Point, bounds: { x: number; y: number; width: number; height: number }): string | null => {
+    const handles = getResizeHandles(bounds);
+    
+    for (const [name, handle] of Object.entries(handles)) {
+      if (
+        point.x >= handle.x &&
+        point.x <= handle.x + handle.width &&
+        point.y >= handle.y &&
+        point.y <= handle.y + handle.height
+      ) {
+        return name;
+      }
+    }
+    
+    return null;
+  };
+
+  // Transform an element based on new bounds
+  const transformElement = (
+    element: DrawingElement,
+    oldBounds: { x: number; y: number; width: number; height: number },
+    newBounds: { x: number; y: number; width: number; height: number }
+  ): DrawingElement => {
+    const scaleX = newBounds.width / oldBounds.width;
+    const scaleY = newBounds.height / oldBounds.height;
+    
+    // Transform points
+    const transformedPoints = element.points.map(p => ({
+      x: newBounds.x + (p.x - oldBounds.x) * scaleX,
+      y: newBounds.y + (p.y - oldBounds.y) * scaleY,
+    }));
+    
+    // For text elements, also scale font size
+    if (element.type === 'text') {
+      const avgScale = (scaleX + scaleY) / 2;
+      return {
+        ...element,
+        points: transformedPoints,
+        fontSize: Math.max(8, Math.round((element.fontSize || 16) * avgScale)),
+      };
+    }
+    
+    return {
+      ...element,
+      points: transformedPoints,
+    };
+  };
+
   const handleMouseDown = (e: MouseEvent<HTMLCanvasElement>) => {
     const point = getMousePos(e);
     
@@ -462,6 +574,49 @@ export function DrawingCanvas() {
     
     // Handle Select tool
     if (activeTool === 'select') {
+      // First check if clicking on a resize handle of selected elements
+      if (selectedElementIds.length > 0) {
+        // Get combined bounds of all selected elements
+        const selectedElements = drawingElements.filter(el => selectedElementIds.includes(el.id));
+        if (selectedElements.length > 0) {
+          // For single selection, use element bounds
+          if (selectedElements.length === 1) {
+            const bounds = getElementBounds(selectedElements[0]);
+            const handle = getResizeHandleAtPoint(point, bounds);
+            
+            if (handle) {
+              // Start resizing - store original elements
+              setIsResizing(true);
+              setResizeHandle(handle);
+              setResizeStartBounds(bounds);
+              setResizeStartPoint(point);
+              setResizeStartElements(JSON.parse(JSON.stringify(selectedElements))); // Deep copy
+              return;
+            }
+          } else {
+            // For multiple selection, use combined bounds
+            const allBounds = selectedElements.map(el => getElementBounds(el));
+            const minX = Math.min(...allBounds.map(b => b.x));
+            const minY = Math.min(...allBounds.map(b => b.y));
+            const maxX = Math.max(...allBounds.map(b => b.x + b.width));
+            const maxY = Math.max(...allBounds.map(b => b.y + b.height));
+            const combinedBounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+            
+            const handle = getResizeHandleAtPoint(point, combinedBounds);
+            
+            if (handle) {
+              // Start resizing - store original elements
+              setIsResizing(true);
+              setResizeHandle(handle);
+              setResizeStartBounds(combinedBounds);
+              setResizeStartPoint(point);
+              setResizeStartElements(JSON.parse(JSON.stringify(selectedElements))); // Deep copy
+              return;
+            }
+          }
+        }
+      }
+      
       // Check if clicking on an existing element
       let found = false;
       let clickedElementId: string | null = null;
@@ -605,6 +760,145 @@ export function DrawingCanvas() {
       return;
     }
     
+    // Handle resizing
+    if (activeTool === 'select' && isResizing && resizeHandle && resizeStartBounds && resizeStartPoint) {
+      const point = getMousePos(e);
+      const dx = point.x - resizeStartPoint.x;
+      const dy = point.y - resizeStartPoint.y;
+      
+      // Calculate new bounds based on resize handle
+      let newBounds = { ...resizeStartBounds };
+      
+      // Check if Shift key is pressed for aspect ratio lock
+      const lockAspectRatio = e.shiftKey;
+      const originalAspectRatio = resizeStartBounds.width / resizeStartBounds.height;
+      
+      switch (resizeHandle) {
+        case 'nw':
+          newBounds.x += dx;
+          newBounds.y += dy;
+          newBounds.width -= dx;
+          newBounds.height -= dy;
+          if (lockAspectRatio) {
+            const avgDelta = (Math.abs(dx) + Math.abs(dy)) / 2;
+            const sign = (dx < 0 || dy < 0) ? 1 : -1;
+            newBounds.width = resizeStartBounds.width + sign * avgDelta;
+            newBounds.height = newBounds.width / originalAspectRatio;
+            newBounds.x = resizeStartBounds.x + resizeStartBounds.width - newBounds.width;
+            newBounds.y = resizeStartBounds.y + resizeStartBounds.height - newBounds.height;
+          }
+          break;
+        case 'n':
+          newBounds.y += dy;
+          newBounds.height -= dy;
+          if (lockAspectRatio) {
+            newBounds.width = newBounds.height * originalAspectRatio;
+            newBounds.x = resizeStartBounds.x + (resizeStartBounds.width - newBounds.width) / 2;
+          }
+          break;
+        case 'ne':
+          newBounds.y += dy;
+          newBounds.width += dx;
+          newBounds.height -= dy;
+          if (lockAspectRatio) {
+            const avgDelta = (Math.abs(dx) + Math.abs(dy)) / 2;
+            const sign = (dx > 0 || dy < 0) ? 1 : -1;
+            newBounds.width = resizeStartBounds.width + sign * avgDelta;
+            newBounds.height = newBounds.width / originalAspectRatio;
+            newBounds.y = resizeStartBounds.y + resizeStartBounds.height - newBounds.height;
+          }
+          break;
+        case 'e':
+          newBounds.width += dx;
+          if (lockAspectRatio) {
+            newBounds.height = newBounds.width / originalAspectRatio;
+            newBounds.y = resizeStartBounds.y + (resizeStartBounds.height - newBounds.height) / 2;
+          }
+          break;
+        case 'se':
+          newBounds.width += dx;
+          newBounds.height += dy;
+          if (lockAspectRatio) {
+            const avgDelta = (Math.abs(dx) + Math.abs(dy)) / 2;
+            const sign = (dx > 0 && dy > 0) ? 1 : -1;
+            newBounds.width = resizeStartBounds.width + sign * avgDelta;
+            newBounds.height = newBounds.width / originalAspectRatio;
+          }
+          break;
+        case 's':
+          newBounds.height += dy;
+          if (lockAspectRatio) {
+            newBounds.width = newBounds.height * originalAspectRatio;
+            newBounds.x = resizeStartBounds.x + (resizeStartBounds.width - newBounds.width) / 2;
+          }
+          break;
+        case 'sw':
+          newBounds.x += dx;
+          newBounds.width -= dx;
+          newBounds.height += dy;
+          if (lockAspectRatio) {
+            const avgDelta = (Math.abs(dx) + Math.abs(dy)) / 2;
+            const sign = (dx < 0 || dy > 0) ? 1 : -1;
+            newBounds.width = resizeStartBounds.width + sign * avgDelta;
+            newBounds.height = newBounds.width / originalAspectRatio;
+            newBounds.x = resizeStartBounds.x + resizeStartBounds.width - newBounds.width;
+          }
+          break;
+        case 'w':
+          newBounds.x += dx;
+          newBounds.width -= dx;
+          if (lockAspectRatio) {
+            newBounds.height = newBounds.width / originalAspectRatio;
+            newBounds.y = resizeStartBounds.y + (resizeStartBounds.height - newBounds.height) / 2;
+          }
+          break;
+      }
+      
+      // Prevent negative dimensions
+      if (newBounds.width < 10) {
+        newBounds.width = 10;
+        if (resizeHandle.includes('w')) {
+          newBounds.x = resizeStartBounds.x + resizeStartBounds.width - 10;
+        }
+      }
+      if (newBounds.height < 10) {
+        newBounds.height = 10;
+        if (resizeHandle.includes('n')) {
+          newBounds.y = resizeStartBounds.y + resizeStartBounds.height - 10;
+        }
+      }
+      
+      // Calculate scale factors
+      const scaleX = newBounds.width / resizeStartBounds.width;
+      const scaleY = newBounds.height / resizeStartBounds.height;
+      
+      // Apply transformation to selected elements
+      resizeStartElements.forEach(originalElement => {
+        const oldBounds = getElementBounds(originalElement);
+        
+        // Calculate element's relative position within the original bounds
+        const relX = (oldBounds.x - resizeStartBounds.x) / resizeStartBounds.width;
+        const relY = (oldBounds.y - resizeStartBounds.y) / resizeStartBounds.height;
+        const relW = oldBounds.width / resizeStartBounds.width;
+        const relH = oldBounds.height / resizeStartBounds.height;
+        
+        // Calculate new element bounds
+        const newElementBounds = {
+          x: newBounds.x + relX * newBounds.width,
+          y: newBounds.y + relY * newBounds.height,
+          width: relW * newBounds.width,
+          height: relH * newBounds.height,
+        };
+        
+        // Transform points based on element type - always from original
+        const transformedElement = transformElement(originalElement, oldBounds, newElementBounds);
+        updateDrawingElement(originalElement.id, transformedElement);
+      });
+      
+      redrawCanvas();
+      return;
+    }
+    
     // Handle box selection
     if (activeTool === 'select' && isBoxSelecting && selectionBox) {
       const point = getMousePos(e);
@@ -639,7 +933,38 @@ export function DrawingCanvas() {
       return;
     }
     
-    if (!isDrawing || !currentElement) return;
+    if (!isDrawing || !currentElement) {
+      // Check for hover over resize handles when select tool is active
+      if (activeTool === 'select' && !isResizing && selectedElementIds.length > 0) {
+        const point = getMousePos(e);
+        const selectedElements = drawingElements.filter(el => selectedElementIds.includes(el.id));
+        
+        if (selectedElements.length > 0) {
+          let bounds;
+          
+          if (selectedElements.length === 1) {
+            bounds = getElementBounds(selectedElements[0]);
+          } else {
+            // Combined bounds for multiple selection
+            const allBounds = selectedElements.map(el => getElementBounds(el));
+            const minX = Math.min(...allBounds.map(b => b.x));
+            const minY = Math.min(...allBounds.map(b => b.y));
+            const maxX = Math.max(...allBounds.map(b => b.x + b.width));
+            const maxY = Math.max(...allBounds.map(b => b.y + b.height));
+            bounds = { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+          }
+          
+          const handle = getResizeHandleAtPoint(point, bounds);
+          setHoveredHandle(handle);
+        } else {
+          setHoveredHandle(null);
+        }
+      } else {
+        setHoveredHandle(null);
+      }
+      
+      return;
+    }
 
     const point = getMousePos(e);
 
@@ -660,6 +985,16 @@ export function DrawingCanvas() {
   };
 
   const handleMouseUp = () => {
+    // Handle resize completion
+    if (isResizing) {
+      setIsResizing(false);
+      setResizeHandle(null);
+      setResizeStartBounds(null);
+      setResizeStartPoint(null);
+      setResizeStartElements([]); // Clear stored elements
+      return;
+    }
+    
     // Handle box selection completion
     if (isBoxSelecting && selectionBox) {
       const x1 = Math.min(selectionBox.start.x, selectionBox.end.x);
@@ -820,6 +1155,26 @@ export function DrawingCanvas() {
   };
 
   const getCursorStyle = () => {
+    // If resizing or hovering over resize handle, show appropriate resize cursor
+    const activeHandle = isResizing ? resizeHandle : hoveredHandle;
+    
+    if (activeHandle) {
+      switch (activeHandle) {
+        case 'nw':
+        case 'se':
+          return 'cursor-nwse-resize';
+        case 'ne':
+        case 'sw':
+          return 'cursor-nesw-resize';
+        case 'n':
+        case 's':
+          return 'cursor-ns-resize';
+        case 'e':
+        case 'w':
+          return 'cursor-ew-resize';
+      }
+    }
+    
     switch (activeTool) {
       case 'select':
         return 'cursor-pointer';
