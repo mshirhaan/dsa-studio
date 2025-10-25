@@ -14,7 +14,7 @@ export function DrawingCanvas() {
   const [dragStartPoint, setDragStartPoint] = useState<Point | null>(null);
   const [isBoxSelecting, setIsBoxSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ start: Point; end: Point } | null>(null);
-  const [laserElements, setLaserElements] = useState<DrawingElement[]>([]);
+  const [laserElements, setLaserElements] = useState<Array<DrawingElement & { createdAt: number }>>([]);
   
   // Image state
   const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
@@ -289,6 +289,37 @@ export function DrawingCanvas() {
     redrawCanvas();
   }, [drawingElements, selectedElementIds, canvasBackground, zoom, panOffset, showGrid, gridSize, selectionBox, laserElements]);
 
+  // Animate laser fade effect
+  useEffect(() => {
+    if (laserElements.length === 0) return;
+
+    let animationFrameId: number;
+    const fadeDuration = 1500; // 1.5 seconds fade
+
+    const animate = () => {
+      const now = Date.now();
+      
+      // Remove expired laser elements
+      setLaserElements(prev => {
+        const filtered = prev.filter(el => now - el.createdAt < fadeDuration);
+        return filtered;
+      });
+      
+      // Continue animation if there are still laser elements
+      if (laserElements.some(el => now - el.createdAt < fadeDuration)) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [laserElements.length]);
+
   const getMousePos = (e: MouseEvent<HTMLCanvasElement>): Point => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -358,9 +389,20 @@ export function DrawingCanvas() {
       drawElement(ctx, element, selectedElementIds.includes(element.id));
     });
 
-    // Draw laser elements (temporary)
+    // Draw laser elements (temporary) with fade effect
+    const now = Date.now();
+    const fadeDuration = 1500;
     laserElements.forEach((element) => {
-      drawElement(ctx, element, false);
+      const age = now - element.createdAt;
+      const fadeProgress = age / fadeDuration;
+      const fadeOpacity = Math.max(0, 1 - fadeProgress);
+      
+      // Create a copy with fading opacity
+      const fadingElement = {
+        ...element,
+        opacity: fadeOpacity,
+      };
+      drawElement(ctx, fadingElement, false);
     });
 
     // Draw current element being created
@@ -1207,13 +1249,8 @@ export function DrawingCanvas() {
     
     if (isDrawing && currentElement) {
       if (activeTool === 'laser') {
-        // Add to laser elements (temporary)
-        setLaserElements(prev => [...prev, currentElement]);
-        
-        // Remove after 1.5 seconds with fade effect
-        setTimeout(() => {
-          setLaserElements(prev => prev.filter(el => el.id !== currentElement.id));
-        }, 1500);
+        // Add to laser elements (temporary) with timestamp
+        setLaserElements(prev => [...prev, { ...currentElement, createdAt: Date.now() }]);
       } else {
         // Add to permanent elements
         addDrawingElement(currentElement);
