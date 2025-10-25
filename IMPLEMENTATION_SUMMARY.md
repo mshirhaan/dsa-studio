@@ -8,13 +8,13 @@
 ## 📊 **FINAL STATISTICS**
 
 ### **Features Implemented:**
-- ✅ **Phase 1 (MVP)**: 100% Complete - **75+ features**
-- ✅ **Phase 2 (Enhanced)**: 85% Complete - **Major features + Resizing + Advanced Text**
-- **Total Features**: **100+**
+- ✅ **Phase 1 (MVP)**: 100% Complete - **80+ features**
+- ✅ **Phase 2 (Enhanced)**: 85% Complete - **Major features + Resizing + Advanced Text + Images**
+- **Total Features**: **105+**
 - **Code Templates**: **10**
 - **Components Created**: **12**
-- **Lines of Code**: **~5,000+**
-- **Drawing Tools**: **12** (including laser pointer)
+- **Lines of Code**: **~5,500+**
+- **Drawing Tools**: **13** (including laser pointer & image upload)
 
 ---
 
@@ -41,21 +41,22 @@
    - **Resizable console with drag handle** ✨ NEW
 
 3. ✅ **Drawing Canvas**
-   - 12 drawing tools (including laser pointer)
+   - 13 drawing tools (including laser pointer & image)
    - Color picker (11 colors)
    - Stroke & fill customization
    - Zoom (25%-400%)
    - Pan functionality
-   - **Cmd/Ctrl + Mouse Wheel zoom (centered on mouse)** ✨ NEW
-   - **Mouse wheel infinite scrolling** ✨ NEW
+   - **Cmd/Ctrl + Mouse Wheel zoom (centered on mouse)**
+   - **Mouse wheel infinite scrolling**
    - Undo/Redo (50 states)
-   - **Select tool with drag** ✨ NEW
-   - **Drag-to-select multiple elements** ✨ NEW
-   - **Proper circle selection bounds** ✨ NEW
-   - **Resize elements with 8 handles** ✨ NEW
-   - **Shift key to lock aspect ratio** ✨ NEW
-   - **Dynamic resize cursors** ✨ NEW
-   - **Laser pointer tool** ✨ NEW
+   - **Select tool with drag**
+   - **Drag-to-select multiple elements**
+   - **Proper circle selection bounds**
+   - **Resize elements with 8 handles**
+   - **Shift key to lock aspect ratio**
+   - **Dynamic resize cursors**
+   - **Laser pointer tool**
+   - **Image upload & drag-and-drop**
 
 4. ✅ **Text Tool Enhancements**
    - **Inline text editing (Excalidraw-style)** ✨ NEW
@@ -267,12 +268,39 @@
   - Crosshair for laser
   - Professional feel
 
-#### 10. **macOS Support** ⭐ ✨ NEW
+#### 10. **macOS Support** ⭐
 - Automatic macOS detection
 - Command (⌘) key for shortcuts
 - Ctrl key for Windows/Linux
 - Shows correct key in shortcuts panel
 - Platform-specific instructions
+
+#### 11. **Image Upload & Management** ⭐
+- **Upload Methods**:
+  - Click Image button in toolbar
+  - Press I key for quick upload
+  - Drag & drop from desktop/folder
+  - Supports all image formats
+
+- **Visual Feedback**:
+  - Blue dashed border on drag-over
+  - "Drop image here" overlay
+  - Smooth upload experience
+
+- **Image Interaction**:
+  - Click to select (blue border)
+  - Drag to move position
+  - 8 resize handles (corners + edges)
+  - Shift key for aspect ratio lock
+  - Works with multi-select
+  - Delete with Delete key
+
+- **Storage & Persistence**:
+  - Base64 encoding for sessions
+  - Saved in session files
+  - Export/Import support
+  - Image caching for performance
+  - Works across multiple slides
 
 ---
 
@@ -416,6 +444,7 @@ Open: **http://localhost:3000**
 - ✅ **Advanced Selection** (drag-to-select, multi-select, drag to move)
 - ✅ **Element Resizing** (8 handles, aspect ratio lock)
 - ✅ **Inline Text Editor** (Excalidraw-style, multi-line)
+- ✅ **Image Upload** (button, keyboard, drag & drop)
 - ✅ **Laser Pointer Tool**
 - ✅ **Mouse Wheel Zoom/Pan**
 - ✅ **Code Editor Zoom**
@@ -423,7 +452,7 @@ Open: **http://localhost:3000**
 - ✅ **Dynamic Cursors** for all tools
 - ✅ **Visible Shortcuts** on UI
 - ✅ **macOS Support** (Cmd key)
-- ✅ **100+ Total Features**
+- ✅ **105+ Total Features**
 - ✅ **Professional Teaching Tool**
 - ✅ **Production Ready!**
 
@@ -442,10 +471,11 @@ Open: **http://localhost:3000**
 1. Insert Binary Tree template
 2. Enable grid for node alignment
 3. Draw tree structure
-4. Use snap-to-grid for perfect alignment
-5. Add colored nodes for traversal order
-6. Resize nodes for emphasis
-7. Use laser pointer during live demo
+4. Upload diagram images for reference (I key)
+5. Use snap-to-grid for perfect alignment
+6. Add colored nodes for traversal order
+7. Resize nodes and images for emphasis
+8. Use laser pointer during live demo
 
 ### Use Case 3: Comparison Teaching
 1. Slide 1: Bubble Sort code + visualization
@@ -457,10 +487,11 @@ Open: **http://localhost:3000**
 
 ### Use Case 4: Student Practice
 1. Create problem statement with inline text
-2. Save as template session
-3. Export JSON
-4. Share with students
-5. They import, solve, and resize as needed
+2. Upload reference images or diagrams (drag & drop)
+3. Save as template session
+4. Export JSON
+5. Share with students
+6. They import, solve, and resize as needed
 
 ---
 

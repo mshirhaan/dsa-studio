@@ -43,10 +43,11 @@
   - [x] Rectangle
   - [x] Circle/Ellipse
   - [x] Triangle
-  - [x] Text tool (inline editing with Excalidraw-style interface) ✨ NEW
-  - [x] Select tool (with drag & multi-select) ✨ NEW
+  - [x] Text tool (inline editing with Excalidraw-style interface)
+  - [x] Image tool (upload & drag-and-drop)
+  - [x] Select tool (with drag & multi-select)
   - [x] Pan tool
-  - [x] Laser pointer tool (temporary red marks that fade) ✨ NEW
+  - [x] Laser pointer tool (temporary red marks that fade)
 - [x] Color picker (11 preset colors)
 - [x] Custom stroke width (1-20px slider)
 - [x] Fill color options
@@ -54,21 +55,26 @@
 - [x] Opacity control (0-100%)
 - [x] Zoom controls (25%-400%)
 - [x] Pan functionality
-- [x] Cmd/Ctrl + Mouse Wheel zoom (centered on mouse) ✨ NEW
-- [x] Mouse wheel infinite scrolling (vertical & horizontal with Shift) ✨ NEW
+- [x] Cmd/Ctrl + Mouse Wheel zoom (centered on mouse)
+- [x] Mouse wheel infinite scrolling (vertical & horizontal with Shift)
 - [x] Custom background colors
 - [x] Undo/Redo (50-state history)
 - [x] Clear canvas
 - [x] Delete selected elements (Delete key)
-- [x] Drag-to-select multiple elements ✨ NEW
-- [x] Drag selected elements to move ✨ NEW
-- [x] Proper circle selection bounds ✨ NEW
-- [x] Resize elements with 8 handles (corners + edges) ✨ NEW
-- [x] Shift key to lock aspect ratio during resize ✨ NEW
-- [x] Dynamic resize cursors on hover ✨ NEW
-- [x] Multi-line text support (Shift+Enter for new lines) ✨ NEW
-- [x] Double-click text to re-edit ✨ NEW
-- [x] Text auto-save on tool switch ✨ NEW
+- [x] Drag-to-select multiple elements
+- [x] Drag selected elements to move
+- [x] Proper circle selection bounds
+- [x] Resize elements with 8 handles (corners + edges)
+- [x] Shift key to lock aspect ratio during resize
+- [x] Dynamic resize cursors on hover
+- [x] Multi-line text support (Shift+Enter for new lines)
+- [x] Double-click text to re-edit
+- [x] Text auto-save on tool switch
+- [x] Image upload via button or keyboard (I key)
+- [x] Drag & drop images from desktop
+- [x] Visual drop indicator overlay
+- [x] Image selection, moving, and resizing
+- [x] Images saved in sessions (base64)
 
 #### ✅ Export Features
 - [x] Export canvas as PNG
@@ -97,29 +103,30 @@
 - [x] Ctrl+S (Cmd on macOS): Save session ✨ NEW
 - [x] Cmd/Ctrl + Plus/Minus: Zoom code editor ✨ NEW
 - [x] Cmd/Ctrl + 0: Reset code editor zoom ✨ NEW
-- [x] Cmd/Ctrl + Mouse Wheel: Zoom canvas (centered on mouse) ✨ NEW
-- [x] Mouse Wheel: Pan canvas vertically ✨ NEW
-- [x] Shift + Mouse Wheel: Pan canvas horizontally ✨ NEW
-- [x] Single-key tool shortcuts (S, P, K, E, L, A, R, C, X, T, H)
+- [x] Cmd/Ctrl + Mouse Wheel: Zoom canvas (centered on mouse)
+- [x] Mouse Wheel: Pan canvas vertically
+- [x] Shift + Mouse Wheel: Pan canvas horizontally
+- [x] Single-key tool shortcuts (S, P, K, E, L, A, R, C, X, T, I, H)
 - [x] S: Select tool
 - [x] P: Pen tool
-- [x] K: Laser pointer ✨ NEW
+- [x] K: Laser pointer
 - [x] E: Eraser
 - [x] L: Line
 - [x] A: Arrow
 - [x] R: Rectangle
 - [x] C: Circle
-- [x] X: Triangle ✨ NEW
-- [x] T: Text ✨ NEW
+- [x] X: Triangle
+- [x] T: Text
+- [x] I: Image (upload)
 - [x] H: Pan tool
 - [x] Delete/Backspace: Delete selected elements
-- [x] Shift: Lock aspect ratio during resize ✨ NEW
-- [x] Shift+Enter: New line in text editor ✨ NEW
-- [x] Escape: Cancel text editing ✨ NEW
-- [x] Enter: Save text ✨ NEW
+- [x] Shift: Lock aspect ratio during resize
+- [x] Shift+Enter: New line in text editor
+- [x] Escape: Cancel text editing
+- [x] Enter: Save text
 - [x] Keyboard shortcuts help panel (floating button)
-- [x] Platform detection (macOS vs Windows/Linux) ✨ NEW
-- [x] Visible keyboard shortcut badges on tools ✨ NEW
+- [x] Platform detection (macOS vs Windows/Linux)
+- [x] Visible keyboard shortcut badges on tools
 
 #### ✅ UI/UX
 - [x] Dark theme optimized
@@ -401,12 +408,13 @@
 **Phase 1 MVP:**
 - ✅ **100% Complete** (all features implemented)
 - 🎨 **6 components** created
-- 📝 **12 drawing tools** available (including laser pointer)
+- 📝 **13 drawing tools** available (including image & laser)
 - ⌨️ **30+ keyboard shortcuts** (macOS & Windows/Linux)
 - 💾 **Full session management**
 - 📤 **Multiple export formats**
 - 🖱️ **Advanced mouse controls** (wheel zoom/pan)
 - 📏 **Element resizing** with 8 handles
+- 🖼️ **Image support** (upload & drag-and-drop)
 
 **Phase 2 Enhanced:**
 - ✅ **85% Complete**
@@ -417,11 +425,12 @@
 - 🔄 **Element resizing** (8 handles, aspect ratio lock)
 - ✏️ **Inline text editing** (Excalidraw-style)
 - 📝 **Multi-line text support**
+- 🖼️ **Image upload & drag-and-drop**
 - 🍎 **macOS support** (Cmd key)
 - 🎨 **Dynamic cursors** for all tools
 
 **Total Features:**
-- ✅ Completed: **85+ features**
+- ✅ Completed: **90+ features**
 - 📋 In Progress (Phase 2): **8+ features**
 - 🚀 Future (Phase 3): **50+ features**
 - 🎯 Premium (Phase 4): **30+ features**
