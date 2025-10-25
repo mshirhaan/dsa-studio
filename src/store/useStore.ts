@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { AppState, CodeFile, DrawingElement, ConsoleOutput, Session, Language } from '@/types';
+import { AppState, CodeFile, DrawingElement, ConsoleOutput, Session, Language, RoadmapTopic, Problem } from '@/types';
+import { defaultRoadmapTopics } from '@/lib/roadmapData';
 
 interface StoreActions {
   // View mode actions
@@ -62,6 +63,12 @@ interface StoreActions {
   deleteSession: (id: string) => void;
   exportSession: () => string;
   importSession: (data: string) => void;
+  
+  // Roadmap actions
+  setShowRoadmap: (show: boolean) => void;
+  updateProblemStatus: (topicId: string, problemId: string, status: Problem['status']) => void;
+  updateProblemNotes: (topicId: string, problemId: string, notes: string) => void;
+  incrementProblemAttempts: (topicId: string, problemId: string) => void;
 }
 
 const defaultCodeFile: CodeFile = {
@@ -120,6 +127,10 @@ const initialState: AppState = {
   history: [[]], // Start with empty state as first history entry
   currentSessionId: null,
   savedSessions: [],
+  
+  // Roadmap
+  roadmapTopics: defaultRoadmapTopics,
+  showRoadmap: false,
 };
 
 export const useStore = create<AppState & StoreActions>((set, get) => ({
@@ -496,6 +507,61 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
       console.error('Failed to import session:', error);
     }
   },
+  
+  // Roadmap actions
+  setShowRoadmap: (show) => set({ showRoadmap: show }),
+  
+  updateProblemStatus: (topicId, problemId, status) => set((state) => ({
+    roadmapTopics: state.roadmapTopics.map(topic =>
+      topic.id === topicId
+        ? {
+            ...topic,
+            problems: topic.problems.map(problem =>
+              problem.id === problemId
+                ? {
+                    ...problem,
+                    status,
+                    completedDate: status === 'completed' ? Date.now() : problem.completedDate,
+                    lastAttempt: Date.now(),
+                  }
+                : problem
+            ),
+          }
+        : topic
+    ),
+  })),
+  
+  updateProblemNotes: (topicId, problemId, notes) => set((state) => ({
+    roadmapTopics: state.roadmapTopics.map(topic =>
+      topic.id === topicId
+        ? {
+            ...topic,
+            problems: topic.problems.map(problem =>
+              problem.id === problemId ? { ...problem, notes } : problem
+            ),
+          }
+        : topic
+    ),
+  })),
+  
+  incrementProblemAttempts: (topicId, problemId) => set((state) => ({
+    roadmapTopics: state.roadmapTopics.map(topic =>
+      topic.id === topicId
+        ? {
+            ...topic,
+            problems: topic.problems.map(problem =>
+              problem.id === problemId
+                ? {
+                    ...problem,
+                    attempts: problem.attempts + 1,
+                    lastAttempt: Date.now(),
+                  }
+                : problem
+            ),
+          }
+        : topic
+    ),
+  })),
 }));
 
 // Load saved sessions on init
@@ -509,5 +575,32 @@ if (typeof window !== 'undefined') {
       console.error('Failed to load sessions:', error);
     }
   }
+  
+  // Load roadmap progress on init
+  const savedRoadmap = localStorage.getItem('dsa-roadmap-progress');
+  if (savedRoadmap) {
+    try {
+      const roadmapTopics = JSON.parse(savedRoadmap);
+      // Only use saved data if it has the same number of topics (prevents old data issues)
+      if (roadmapTopics.length === defaultRoadmapTopics.length) {
+        useStore.setState({ roadmapTopics });
+      } else {
+        // If topic count changed, use default and clear old data
+        console.log('Roadmap structure changed, loading fresh data');
+        localStorage.removeItem('dsa-roadmap-progress');
+      }
+    } catch (error) {
+      console.error('Failed to load roadmap progress:', error);
+    }
+  }
+  
+  // Save roadmap progress whenever it changes
+  let previousRoadmap = useStore.getState().roadmapTopics;
+  useStore.subscribe((state) => {
+    if (state.roadmapTopics !== previousRoadmap) {
+      localStorage.setItem('dsa-roadmap-progress', JSON.stringify(state.roadmapTopics));
+      previousRoadmap = state.roadmapTopics;
+    }
+  });
 }
 

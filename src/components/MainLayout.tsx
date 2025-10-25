@@ -11,6 +11,7 @@ import {
   Upload,
   Layers,
   GripVertical,
+  Map,
 } from 'lucide-react';
 import { CodeEditor } from './CodeEditor';
 import { DrawingCanvas } from './DrawingCanvas';
@@ -19,6 +20,7 @@ import { KeyboardShortcuts } from './KeyboardShortcuts';
 import { ShortcutsPanel } from './ShortcutsPanel';
 import { TemplatesPanel } from './TemplatesPanel';
 import { SlideNavigation } from './SlideNavigation';
+import { RoadmapPanel } from './RoadmapPanel';
 import { useState, useRef, useEffect } from 'react';
 
 export function MainLayout() {
@@ -32,6 +34,8 @@ export function MainLayout() {
     savedSessions,
     exportSession,
     importSession,
+    showRoadmap,
+    setShowRoadmap,
   } = useStore();
 
   const [showSessionMenu, setShowSessionMenu] = useState(false);
@@ -161,6 +165,19 @@ export function MainLayout() {
           {/* Templates Button */}
           <TemplatesPanel />
 
+          <button
+            onClick={() => setShowRoadmap(!showRoadmap)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${
+              showRoadmap
+                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                : 'bg-gray-700 hover:bg-gray-600 text-white'
+            }`}
+            title="DSA Roadmap"
+          >
+            <Map size={16} />
+            Roadmap
+          </button>
+
           <div className="w-px h-6 bg-gray-600" />
 
           {/* Session Controls */}
@@ -240,7 +257,8 @@ export function MainLayout() {
 
       {/* Main Content Area */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden">
-        {viewMode === 'split' && (
+        <div className="flex-1 flex overflow-hidden">
+          {viewMode === 'split' && (
           <>
             <div
               className="flex-shrink-0"
@@ -283,6 +301,10 @@ export function MainLayout() {
             <SlideNavigation />
           </div>
         )}
+        </div>
+        
+        {/* Roadmap Panel */}
+        <RoadmapPanel />
       </div>
     </div>
     </>

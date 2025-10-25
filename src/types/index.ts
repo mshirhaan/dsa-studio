@@ -121,5 +121,44 @@ export interface AppState {
   // Session
   currentSessionId: string | null;
   savedSessions: Session[];
+  
+  // Roadmap
+  roadmapTopics: RoadmapTopic[];
+  showRoadmap: boolean;
+}
+
+// Roadmap types
+export type ProblemStatus = 'not_started' | 'in_progress' | 'completed';
+export type ProblemDifficulty = 'easy' | 'medium' | 'hard';
+export type TopicCategory = 'beginner' | 'intermediate' | 'advanced';
+
+export interface Problem {
+  id: string;
+  title: string;
+  difficulty: ProblemDifficulty;
+  leetcodeId?: number;
+  leetcodeUrl?: string;
+  status: ProblemStatus;
+  notes: string;
+  completedDate?: number;
+  lastAttempt?: number;
+  attempts: number;
+  tags: string[];
+}
+
+export interface RoadmapTopic {
+  id: string;
+  name: string;
+  category: TopicCategory;
+  description: string;
+  concepts: string[];
+  problems: Problem[];
+  order: number;
+}
+
+export interface RoadmapState {
+  topics: RoadmapTopic[];
+  customProblems: Problem[];
+  showRoadmap: boolean;
 }
 
