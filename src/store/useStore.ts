@@ -114,8 +114,8 @@ const initialState: AppState = {
   snapToGrid: false,
   currentSlide: 0,
   slides: [[]],
-  historyIndex: -1,
-  history: [],
+  historyIndex: 0,
+  history: [[]], // Start with empty state as first history entry
   currentSessionId: null,
   savedSessions: [],
 };
