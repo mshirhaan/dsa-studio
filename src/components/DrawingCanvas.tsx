@@ -285,6 +285,21 @@ export function DrawingCanvas() {
   }, [panOffset, zoom, strokeColor, strokeWidth, fillColor, opacity, lineStyle, addDrawingElement]);
 
 
+  // Auto-focus text input when created
+  useEffect(() => {
+    if (textEdit && textInputRef.current) {
+      // Use setTimeout to ensure the textarea is rendered
+      const timeoutId = setTimeout(() => {
+        textInputRef.current?.focus();
+        // Move cursor to end of text
+        const length = textInputRef.current?.value.length || 0;
+        textInputRef.current?.setSelectionRange(length, length);
+      }, 0);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [textEdit]);
+
   // Redraw canvas when elements change
   useEffect(() => {
     redrawCanvas();
@@ -550,8 +565,9 @@ export function DrawingCanvas() {
       case 'text':
         if (element.text && element.points.length > 0) {
           const fontSize = element.fontSize || 16;
-          ctx.font = `${fontSize}px sans-serif`;
+          ctx.font = `${fontSize}px monospace`;
           ctx.fillStyle = element.color;
+          ctx.textBaseline = 'alphabetic'; // Use alphabetic baseline (default)
           
           // Split text by newlines and render each line
           const lines = element.text.split('\n');
@@ -561,7 +577,7 @@ export function DrawingCanvas() {
             ctx.fillText(
               line, 
               element.points[0].x, 
-              element.points[0].y + (index * lineHeight)
+              element.points[0].y + fontSize + (index * lineHeight) // Add fontSize to account for baseline
             );
           });
         }
@@ -627,7 +643,7 @@ export function DrawingCanvas() {
         if (ctx) {
           const fontSize = element.fontSize || 16;
           const lineHeight = fontSize * 1.5;
-          ctx.font = `${fontSize}px sans-serif`;
+          ctx.font = `${fontSize}px monospace`;
           
           // Split text by newlines
           const lines = element.text.split('\n');
@@ -645,9 +661,9 @@ export function DrawingCanvas() {
           
           return {
             x: element.points[0].x - 5,
-            y: element.points[0].y - fontSize - 5,
+            y: element.points[0].y - 5, // Match the textarea top position
             width: maxWidth + 10,
-            height: textHeight + 10,
+            height: textHeight + fontSize + 10, // Add fontSize for baseline offset
           };
         }
       }
@@ -659,9 +675,9 @@ export function DrawingCanvas() {
       const approxWidth = (longestLine.length * fontSize * 0.6); // Rough estimate
       return {
         x: element.points[0].x - 5,
-        y: element.points[0].y - fontSize - 5,
+        y: element.points[0].y - 5, // Match the textarea top position
         width: approxWidth + 10,
-        height: (lines.length * lineHeight) + 10,
+        height: (lines.length * lineHeight) + fontSize + 10, // Add fontSize for baseline offset
       };
     }
     
@@ -1382,6 +1398,18 @@ export function DrawingCanvas() {
     } else if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       saveText();
+    } else if (e.key === 'Tab') {
+      e.preventDefault();
+      // Insert tab character at cursor position
+      const textarea = e.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newText = textEdit!.text.substring(0, start) + '\t' + textEdit!.text.substring(end);
+      setTextEdit({ ...textEdit!, text: newText });
+      // Move cursor after the tab
+      setTimeout(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 1;
+      }, 0);
     }
   };
 
@@ -1456,19 +1484,28 @@ export function DrawingCanvas() {
           onChange={(e) => setTextEdit({ ...textEdit, text: e.target.value })}
           onKeyDown={handleTextKeyDown}
           autoFocus
-          className="absolute bg-transparent text-gray-900 dark:text-white outline-none resize-none font-sans"
+          className="absolute bg-transparent outline-none resize-none font-mono overflow-hidden"
           style={{
             left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
             top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
-            fontSize: '16px',
+            fontSize: `${16 * zoom}px`, // Scale font size with zoom
             lineHeight: '1.5',
-            minWidth: '200px',
-            minHeight: '32px',
+            minWidth: `${200 * zoom}px`, // Scale min width with zoom
+            height: 'auto', // Auto height based on content
+            maxHeight: '80vh', // Max height to prevent going off screen
+            overflowY: 'auto', // Scroll if exceeds max height
             zIndex: 100000,
             border: 'none',
             padding: 0,
+            color: strokeColor, // Text color matches stroke color
+            caretColor: strokeColor, // Cursor color matches stroke color
+            transformOrigin: 'top left',
+            whiteSpace: 'pre', // Preserve all whitespace including multiple spaces and tabs
+            wordWrap: 'normal',
+            overflowWrap: 'normal',
+            tabSize: 4, // Tab width
           }}
-          placeholder="Type text... (Enter to save, Esc to cancel)"
+          rows={textEdit.text.split('\n').length || 1} // Dynamic rows based on newlines
           data-canvas-x={textEdit.canvasPoint.x}
           data-canvas-y={textEdit.canvasPoint.y}
           data-zoom={zoom}
