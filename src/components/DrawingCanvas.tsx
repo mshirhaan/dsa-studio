@@ -15,7 +15,15 @@ export function DrawingCanvas() {
   const [isBoxSelecting, setIsBoxSelecting] = useState(false);
   const [selectionBox, setSelectionBox] = useState<{ start: Point; end: Point } | null>(null);
   const [laserElements, setLaserElements] = useState<DrawingElement[]>([]);
-
+  
+  // Text editing state
+  const [textEdit, setTextEdit] = useState<{
+    canvasPoint: Point;
+    text: string;
+  } | null>(null);
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
+  const justCreatedTextarea = useRef(false);
+ 
   const {
     drawingElements,
     activeTool,
@@ -378,6 +386,37 @@ export function DrawingCanvas() {
   };
 
   const getElementBounds = (element: DrawingElement) => {
+    // Special handling for text elements
+    if (element.type === 'text' && element.text && element.points.length > 0) {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const fontSize = element.fontSize || 16;
+          ctx.font = `${fontSize}px sans-serif`;
+          const metrics = ctx.measureText(element.text);
+          const textWidth = metrics.width;
+          const textHeight = fontSize; // Approximate height
+          
+          return {
+            x: element.points[0].x - 5,
+            y: element.points[0].y - textHeight - 5,
+            width: textWidth + 10,
+            height: textHeight + 10,
+          };
+        }
+      }
+      // Fallback if canvas context is not available
+      const fontSize = element.fontSize || 16;
+      const approxWidth = (element.text.length * fontSize * 0.6); // Rough estimate
+      return {
+        x: element.points[0].x - 5,
+        y: element.points[0].y - fontSize - 5,
+        width: approxWidth + 10,
+        height: fontSize + 10,
+      };
+    }
+    
     // Special handling for circles to get proper bounds
     if (element.type === 'circle' && element.points.length >= 2) {
       const start = element.points[0];
@@ -426,6 +465,7 @@ export function DrawingCanvas() {
       // Check if clicking on an existing element
       let found = false;
       let clickedElementId: string | null = null;
+      let clickedElement: DrawingElement | null = null;
       
       for (let i = drawingElements.length - 1; i >= 0; i--) {
         const element = drawingElements[i];
@@ -439,6 +479,7 @@ export function DrawingCanvas() {
           point.y <= bounds.y + bounds.height
         ) {
           clickedElementId = element.id;
+          clickedElement = element;
           found = true;
           break;
         }
@@ -494,28 +535,39 @@ export function DrawingCanvas() {
     }
 
     // Handle Text tool
-    setIsDrawing(true);
-    setStartPoint(point);
-
     if (activeTool === 'text') {
-      const text = prompt('Enter text:');
-      if (text) {
-        const element: DrawingElement = {
-          id: Date.now().toString() + Math.random(),
-          type: 'text',
-          points: [point],
-          color: strokeColor,
-          strokeWidth,
-          opacity,
-          lineStyle,
-          text,
-          fontSize: 16,
-        };
-        addDrawingElement(element);
+      // If there's an existing text edit, save it first
+      if (textEdit) {
+        if (textEdit.text.trim()) {
+          const element: DrawingElement = {
+            id: Date.now().toString() + Math.random(),
+            type: 'text',
+            points: [textEdit.canvasPoint],
+            color: strokeColor,
+            strokeWidth,
+            opacity,
+            lineStyle,
+            text: textEdit.text,
+            fontSize: 16,
+          };
+          addDrawingElement(element);
+        }
       }
-      setIsDrawing(false);
+      
+      // Start text editing at this point
+      setTextEdit({
+        canvasPoint: point,
+        text: ''
+      });
+      
+      // Mark that we just created the textarea
+      justCreatedTextarea.current = true;
+      
       return;
     }
+
+    setIsDrawing(true);
+    setStartPoint(point);
 
     // Handle other drawing tools
     const element: DrawingElement = {
@@ -658,6 +710,41 @@ export function DrawingCanvas() {
     setDragStartPoint(null);
   };
 
+  const handleDoubleClick = (e: MouseEvent<HTMLCanvasElement>) => {
+    const point = getMousePos(e);
+    
+    // Find if we double-clicked on a text element
+    for (let i = drawingElements.length - 1; i >= 0; i--) {
+      const element = drawingElements[i];
+      
+      // Only handle text elements
+      if (element.type !== 'text') continue;
+      
+      const bounds = getElementBounds(element);
+      
+      if (
+        point.x >= bounds.x &&
+        point.x <= bounds.x + bounds.width &&
+        point.y >= bounds.y &&
+        point.y <= bounds.y + bounds.height
+      ) {
+        // Found a text element - enable editing
+        setTextEdit({
+          canvasPoint: element.points[0],
+          text: element.text || ''
+        });
+        
+        // Delete the old text element
+        deleteDrawingElements([element.id]);
+        
+        // Mark that we just created the textarea
+        justCreatedTextarea.current = true;
+        
+        return;
+      }
+    }
+  };
+
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Delete' || e.key === 'Backspace') {
       if (selectedElementIds.length > 0) {
@@ -670,6 +757,67 @@ export function DrawingCanvas() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedElementIds]);
+
+  // Focus textarea when textEdit is set
+  useEffect(() => {
+    if (textEdit && textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  }, [textEdit]);
+
+  // Save text and exit edit mode when switching tools
+  useEffect(() => {
+    if (textEdit && activeTool !== 'text') {
+      // User switched to a different tool - save the text
+      if (textEdit.text.trim()) {
+        const element: DrawingElement = {
+          id: Date.now().toString() + Math.random(),
+          type: 'text',
+          points: [textEdit.canvasPoint],
+          color: strokeColor,
+          strokeWidth,
+          opacity,
+          lineStyle,
+          text: textEdit.text,
+          fontSize: 16,
+        };
+        addDrawingElement(element);
+      }
+      setTextEdit(null);
+    }
+  }, [activeTool, textEdit, strokeColor, strokeWidth, opacity, lineStyle, addDrawingElement]);
+
+  // Text editing handlers
+  const saveText = () => {
+    if (textEdit && textEdit.text.trim()) {
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'text',
+        points: [textEdit.canvasPoint],
+        color: strokeColor,
+        strokeWidth,
+        opacity,
+        lineStyle,
+        text: textEdit.text,
+        fontSize: 16,
+      };
+      addDrawingElement(element);
+    }
+    setTextEdit(null);
+  };
+
+  const handleTextKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Stop event from propagating to prevent triggering shortcuts
+    e.stopPropagation();
+    
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setTextEdit(null);
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveText();
+    }
+  };
 
   const getCursorStyle = () => {
     switch (activeTool) {
@@ -689,16 +837,50 @@ export function DrawingCanvas() {
   };
 
   return (
-    <div ref={containerRef} className="relative w-full h-full overflow-hidden">
+    <div 
+      ref={containerRef} 
+      className="relative w-full h-full overflow-hidden"
+    >
       <canvas
         ref={canvasRef}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onDoubleClick={handleDoubleClick}
         className={getCursorStyle()}
         style={{ backgroundColor: canvasBackground }}
       />
+      
+      {/* Inline text editor (Excalidraw style) */}
+      {textEdit && (
+        <textarea
+          id="canvas-text-input"
+          ref={textInputRef}
+          value={textEdit.text}
+          onChange={(e) => setTextEdit({ ...textEdit, text: e.target.value })}
+          onKeyDown={handleTextKeyDown}
+          autoFocus
+          className="absolute bg-transparent text-gray-900 dark:text-white outline-none resize-none font-sans"
+          style={{
+            left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
+            top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
+            fontSize: '16px',
+            lineHeight: '1.5',
+            minWidth: '200px',
+            minHeight: '32px',
+            zIndex: 100000,
+            border: 'none',
+            padding: 0,
+          }}
+          placeholder="Type text... (Enter to save, Esc to cancel)"
+          data-canvas-x={textEdit.canvasPoint.x}
+          data-canvas-y={textEdit.canvasPoint.y}
+          data-zoom={zoom}
+          data-pan-x={panOffset.x}
+          data-pan-y={panOffset.y}
+        />
+      )}
     </div>
   );
 }
