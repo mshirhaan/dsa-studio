@@ -1,6 +1,7 @@
 'use client';
 
 import { useStore } from '@/store/useStore';
+import { useRef, useEffect } from 'react';
 import {
   MousePointer2,
   Pencil,
@@ -21,6 +22,7 @@ import {
   Grid3x3,
   Magnet,
   Zap,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 const tools = [
@@ -34,6 +36,7 @@ const tools = [
   { id: 'circle' as const, icon: Circle, label: 'Circle', shortcut: 'C' },
   { id: 'triangle' as const, icon: Triangle, label: 'Triangle', shortcut: 'X' },
   { id: 'text' as const, icon: Type, label: 'Text', shortcut: 'T' },
+  { id: 'image' as const, icon: ImageIcon, label: 'Image', shortcut: 'I', isUpload: true },
   { id: 'pan' as const, icon: Hand, label: 'Pan', shortcut: 'H' },
 ];
 
@@ -52,6 +55,8 @@ const colors = [
 ];
 
 export function DrawingToolbar() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const {
     activeTool,
     setActiveTool,
@@ -83,6 +88,51 @@ export function DrawingToolbar() {
 
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
+
+  // Listen for image tool keyboard shortcut
+  useEffect(() => {
+    const handleImageShortcut = () => {
+      fileInputRef.current?.click();
+    };
+    
+    window.addEventListener('imageToolShortcut', handleImageShortcut);
+    return () => window.removeEventListener('imageToolShortcut', handleImageShortcut);
+  }, []);
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check if file is an image
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageSrc = e.target?.result as string;
+      // Dispatch custom event to DrawingCanvas with image data
+      const event = new CustomEvent('imageUpload', { 
+        detail: { imageSrc } 
+      });
+      window.dispatchEvent(event);
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleToolClick = (toolId: typeof tools[number]['id']) => {
+    if (toolId === 'image') {
+      fileInputRef.current?.click();
+    } else {
+      setActiveTool(toolId);
+    }
+  };
 
   const handleExportCanvas = () => {
     // Get the canvas element
@@ -132,6 +182,15 @@ export function DrawingToolbar() {
 
   return (
     <div className="flex flex-col gap-4 p-4 bg-gray-800 border-b border-gray-700">
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        className="hidden"
+      />
+      
       {/* Tools */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-xs font-medium text-gray-400 mr-2">Tools:</span>
@@ -140,7 +199,7 @@ export function DrawingToolbar() {
           return (
             <button
               key={tool.id}
-              onClick={() => setActiveTool(tool.id)}
+              onClick={() => handleToolClick(tool.id)}
               className={`relative p-2 rounded transition-colors ${
                 activeTool === tool.id
                   ? 'bg-blue-600 text-white'

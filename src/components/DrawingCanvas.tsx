@@ -16,6 +16,10 @@ export function DrawingCanvas() {
   const [selectionBox, setSelectionBox] = useState<{ start: Point; end: Point } | null>(null);
   const [laserElements, setLaserElements] = useState<DrawingElement[]>([]);
   
+  // Image state
+  const [loadedImages, setLoadedImages] = useState<Map<string, HTMLImageElement>>(new Map());
+  const [isDragOver, setIsDragOver] = useState(false);
+  
   // Resize state
   const [isResizing, setIsResizing] = useState(false);
   const [resizeHandle, setResizeHandle] = useState<string | null>(null); // 'nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'
@@ -149,6 +153,135 @@ export function DrawingCanvas() {
       canvas.removeEventListener('wheel', handleWheel);
     };
   }, [zoom, panOffset, setZoom, setPanOffset]);
+
+  // Handle image upload from toolbar
+  useEffect(() => {
+    const handleImageUpload = (e: Event) => {
+      const customEvent = e as CustomEvent<{ imageSrc: string }>;
+      const { imageSrc } = customEvent.detail;
+      
+      // Load the image
+      const img = new Image();
+      img.onload = () => {
+        // Calculate center position
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        
+        const centerX = (canvas.width / 2 - panOffset.x) / zoom;
+        const centerY = (canvas.height / 2 - panOffset.y) / zoom;
+        
+        // Create image element
+        const imageElement: DrawingElement = {
+          id: `img-${Date.now()}`,
+          type: 'image',
+          points: [{ x: centerX - img.width / 2, y: centerY - img.height / 2 }],
+          color: strokeColor,
+          strokeWidth,
+          fillColor,
+          opacity,
+          lineStyle,
+          imageSrc,
+          imageWidth: img.width,
+          imageHeight: img.height,
+        };
+        
+        addDrawingElement(imageElement);
+        
+        // Store loaded image
+        setLoadedImages(prev => {
+          const newMap = new Map(prev);
+          newMap.set(imageSrc, img);
+          return newMap;
+        });
+      };
+      img.src = imageSrc;
+    };
+    
+    window.addEventListener('imageUpload', handleImageUpload);
+    return () => window.removeEventListener('imageUpload', handleImageUpload);
+  }, [panOffset, zoom, strokeColor, strokeWidth, fillColor, opacity, lineStyle, addDrawingElement]);
+
+  // Handle drag and drop for images
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(true);
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0) return;
+
+      const file = files[0];
+      if (!file.type.startsWith('image/')) {
+        alert('Please drop an image file');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (readerEvent) => {
+        const imageSrc = readerEvent.target?.result as string;
+        const img = new Image();
+        
+        img.onload = () => {
+          // Get drop position
+          const rect = canvas.getBoundingClientRect();
+          const dropX = (e.clientX - rect.left - panOffset.x) / zoom;
+          const dropY = (e.clientY - rect.top - panOffset.y) / zoom;
+          
+          // Create image element at drop position
+          const imageElement: DrawingElement = {
+            id: `img-${Date.now()}`,
+            type: 'image',
+            points: [{ x: dropX - img.width / 2, y: dropY - img.height / 2 }],
+            color: strokeColor,
+            strokeWidth,
+            fillColor,
+            opacity,
+            lineStyle,
+            imageSrc,
+            imageWidth: img.width,
+            imageHeight: img.height,
+          };
+          
+          addDrawingElement(imageElement);
+          
+          // Store loaded image
+          setLoadedImages(prev => {
+            const newMap = new Map(prev);
+            newMap.set(imageSrc, img);
+            return newMap;
+          });
+        };
+        img.src = imageSrc;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    canvas.addEventListener('dragover', handleDragOver);
+    canvas.addEventListener('dragleave', handleDragLeave);
+    canvas.addEventListener('drop', handleDrop);
+
+    return () => {
+      canvas.removeEventListener('dragover', handleDragOver);
+      canvas.removeEventListener('dragleave', handleDragLeave);
+      canvas.removeEventListener('drop', handleDrop);
+    };
+  }, [panOffset, zoom, strokeColor, strokeWidth, fillColor, opacity, lineStyle, addDrawingElement]);
 
 
   // Redraw canvas when elements change
@@ -390,6 +523,32 @@ export function DrawingCanvas() {
           });
         }
         break;
+
+      case 'image':
+        if (element.imageSrc && element.points.length > 0) {
+          const img = loadedImages.get(element.imageSrc);
+          if (img && img.complete) {
+            const x = element.points[0].x;
+            const y = element.points[0].y;
+            const width = element.imageWidth || img.width;
+            const height = element.imageHeight || img.height;
+            
+            ctx.drawImage(img, x, y, width, height);
+          } else if (element.imageSrc) {
+            // Load image if not already loaded
+            const newImg = new Image();
+            newImg.onload = () => {
+              setLoadedImages(prev => {
+                const newMap = new Map(prev);
+                newMap.set(element.imageSrc!, newImg);
+                return newMap;
+              });
+              redrawCanvas();
+            };
+            newImg.src = element.imageSrc;
+          }
+        }
+        break;
     }
 
     // Draw selection box
@@ -460,6 +619,18 @@ export function DrawingCanvas() {
         y: element.points[0].y - fontSize - 5,
         width: approxWidth + 10,
         height: (lines.length * lineHeight) + 10,
+      };
+    }
+    
+    // Special handling for image elements
+    if (element.type === 'image' && element.points.length > 0) {
+      const width = element.imageWidth || 100;
+      const height = element.imageHeight || 100;
+      return {
+        x: element.points[0].x - 5,
+        y: element.points[0].y - 5,
+        width: width + 10,
+        height: height + 10,
       };
     }
     
@@ -553,6 +724,16 @@ export function DrawingCanvas() {
         ...element,
         points: transformedPoints,
         fontSize: Math.max(8, Math.round((element.fontSize || 16) * avgScale)),
+      };
+    }
+    
+    // For image elements, scale image dimensions
+    if (element.type === 'image' && element.imageWidth && element.imageHeight) {
+      return {
+        ...element,
+        points: transformedPoints,
+        imageWidth: Math.round(element.imageWidth * scaleX),
+        imageHeight: Math.round(element.imageHeight * scaleY),
       };
     }
     
@@ -1206,6 +1387,15 @@ export function DrawingCanvas() {
         className={getCursorStyle()}
         style={{ backgroundColor: canvasBackground }}
       />
+      
+      {/* Drag-over overlay */}
+      {isDragOver && (
+        <div className="absolute inset-0 bg-blue-500 bg-opacity-20 border-4 border-blue-500 border-dashed flex items-center justify-center pointer-events-none">
+          <div className="bg-gray-900 bg-opacity-90 px-6 py-4 rounded-lg">
+            <p className="text-white text-xl font-semibold">Drop image here</p>
+          </div>
+        </div>
+      )}
       
       {/* Inline text editor (Excalidraw style) */}
       {textEdit && (

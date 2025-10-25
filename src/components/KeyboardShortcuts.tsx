@@ -92,6 +92,11 @@ export function KeyboardShortcuts() {
           case 't':
             setActiveTool('text');
             break;
+          case 'i':
+            // Trigger image upload
+            const event = new CustomEvent('imageToolShortcut');
+            window.dispatchEvent(event);
+            break;
           case 'h':
             setActiveTool('pan');
             break;

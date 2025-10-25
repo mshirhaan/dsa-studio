@@ -15,7 +15,8 @@ export type DrawingTool =
   | 'triangle' 
   | 'text' 
   | 'pan'
-  | 'laser';
+  | 'laser'
+  | 'image';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 
@@ -38,6 +39,10 @@ export interface DrawingElement {
   width?: number;
   height?: number;
   rotation?: number;
+  // Image-specific properties
+  imageSrc?: string; // base64 or URL
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 export interface CodeFile {

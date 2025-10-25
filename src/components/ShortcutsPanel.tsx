@@ -42,6 +42,7 @@ export function ShortcutsPanel() {
       { keys: ['C'], description: 'Circle Tool' },
       { keys: ['X'], description: 'Triangle Tool' },
       { keys: ['T'], description: 'Text Tool' },
+      { keys: ['I'], description: 'Image Tool (Upload)' },
       { keys: ['H'], description: 'Pan Tool' },
     ]},
   ];
