@@ -203,11 +203,51 @@
   - [x] Font size scales with resize
 - [ ] Rulers (horizontal/vertical)
 - [ ] Alignment guides
-- [ ] Clone/duplicate elements
+- [x] Copy/Paste/Duplicate elements (Cmd/Ctrl + C/V/D) ✨ NEW
 - [ ] Group/ungroup elements
 - [ ] Lock elements
 - [ ] Send to front/back (layering)
 - [ ] Alignment tools (left, center, right, top, middle, bottom)
+
+### ✅ DSA Roadmap (COMPLETED) ✨ NEW
+- [x] Interactive roadmap sidebar panel
+- [x] 144 LeetCode problems across 13 topics
+- [x] Topic categories:
+  - [x] Arrays & Strings (32 problems) - Beginner
+  - [x] Linked Lists (12 problems) - Beginner
+  - [x] Sorting Algorithms (1 implementation) - Beginner
+  - [x] Recursion & Backtracking (13 problems) - Intermediate
+  - [x] Binary Trees & BST (16 problems) - Intermediate
+  - [x] Heap / Priority Queue (1 implementation) - Intermediate
+  - [x] Binary Search (7 problems) - Intermediate
+  - [x] Graph Algorithms (25 problems) - Advanced
+  - [x] Trie (4 problems) - Advanced
+  - [x] Dynamic Programming (27 problems) - Advanced
+  - [x] Greedy Algorithms (3 problems) - Advanced
+  - [x] String Algorithms (2 problems) - Advanced
+  - [x] Bit Manipulation (1 problem) - Intermediate
+- [x] Problem tracking features:
+  - [x] Status tracking (Not Started / In Progress / Completed)
+  - [x] Personal notes for each problem
+  - [x] Attempt counter
+  - [x] Completion date tracking
+  - [x] Direct LeetCode links
+- [x] Visual progress indicators:
+  - [x] Overall progress bar
+  - [x] Per-topic progress bars
+  - [x] Color-coded difficulty (Easy/Medium/Hard)
+  - [x] Status icons (⭕ ⏱ ✅)
+- [x] Data management:
+  - [x] CSV import from Google Sheets
+  - [x] LocalStorage persistence
+  - [x] Smart cache invalidation
+  - [x] Progress auto-save
+- [x] UI/UX:
+  - [x] Collapsible topics
+  - [x] Expandable problem lists
+  - [x] Problem detail modal
+  - [x] Category grouping (Beginner/Intermediate/Advanced)
+  - [x] Responsive sidebar panel
 
 ### More Export Formats
 - [ ] Export all slides as multi-page PDF
