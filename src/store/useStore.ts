@@ -121,7 +121,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   
   // View mode actions
   setViewMode: (mode) => set({ viewMode: mode }),
-  setSplitRatio: (ratio) => set({ splitRatio: Math.max(0.2, Math.min(0.8, ratio)) }),
+  setSplitRatio: (ratio) => set({ splitRatio: Math.max(0.05, Math.min(0.95, ratio)) }),
   
   // Code editor actions
   addCodeFile: (file) => set((state) => ({

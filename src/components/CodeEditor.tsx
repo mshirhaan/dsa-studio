@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStore } from '@/store/useStore';
-import { Play, Square, Trash2, Download, Plus, X } from 'lucide-react';
+import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal } from 'lucide-react';
 
 export function CodeEditor() {
   const {
@@ -11,6 +11,7 @@ export function CodeEditor() {
     activeFileId,
     editorTheme,
     fontSize,
+    setFontSize,
     updateCodeFile,
     setActiveFile,
     addCodeFile,
@@ -24,12 +25,58 @@ export function CodeEditor() {
 
   const activeFile = codeFiles.find(f => f.id === activeFileId);
   const consoleRef = useRef<HTMLDivElement>(null);
+  const [consoleHeight, setConsoleHeight] = useState(192); // 192px = h-48
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeStartY = useRef(0);
+  const startHeight = useRef(0);
 
   useEffect(() => {
     if (consoleRef.current) {
       consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
     }
   }, [consoleOutput]);
+
+  // Handle console resize
+  const handleResizeStart = (e: React.MouseEvent) => {
+    setIsResizing(true);
+    resizeStartY.current = e.clientY;
+    startHeight.current = consoleHeight;
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      const deltaY = resizeStartY.current - e.clientY;
+      const newHeight = Math.max(50, Math.min(window.innerHeight - 200, startHeight.current + deltaY));
+      setConsoleHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing, consoleHeight]);
+
+  // Zoom controls
+  const handleZoomIn = () => {
+    setFontSize(Math.min(32, fontSize + 2));
+  };
+
+  const handleZoomOut = () => {
+    setFontSize(Math.max(10, fontSize - 2));
+  };
+
+  const handleResetZoom = () => {
+    setFontSize(14);
+  };
 
   const handleRun = () => {
     if (!activeFile || isRunning) return;
@@ -176,6 +223,33 @@ export function CodeEditor() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2">
+          {/* Zoom controls */}
+          <div className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded">
+            <button
+              onClick={handleZoomOut}
+              className="p-1 hover:bg-gray-600 rounded transition-colors"
+              title="Zoom out (Cmd/Ctrl + -)"
+            >
+              <ZoomOut size={14} className="text-gray-300" />
+            </button>
+            <button
+              onClick={handleResetZoom}
+              className="px-2 text-xs text-gray-400 hover:text-white transition-colors"
+              title="Reset zoom"
+            >
+              {fontSize}px
+            </button>
+            <button
+              onClick={handleZoomIn}
+              className="p-1 hover:bg-gray-600 rounded transition-colors"
+              title="Zoom in (Cmd/Ctrl + +)"
+            >
+              <ZoomIn size={14} className="text-gray-300" />
+            </button>
+          </div>
+
+          <div className="w-px h-6 bg-gray-600" />
+
           <button
             onClick={handleRun}
             disabled={isRunning}
@@ -217,7 +291,21 @@ export function CodeEditor() {
       </div>
 
       {/* Console */}
-      <div className="h-48 border-t border-gray-700 bg-gray-900 flex flex-col">
+      <div 
+        className="border-t border-gray-700 bg-gray-900 flex flex-col"
+        style={{ height: `${consoleHeight}px` }}
+      >
+        {/* Resize handle */}
+        <div
+          onMouseDown={handleResizeStart}
+          className="h-2 bg-gray-700 hover:bg-blue-500 cursor-row-resize transition-colors flex items-center justify-center group relative"
+          style={{ minHeight: '8px' }}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <GripHorizontal size={20} className="text-gray-500 group-hover:text-blue-300 transition-colors" />
+          </div>
+        </div>
+        
         <div className="flex items-center justify-between p-2 bg-gray-800 border-b border-gray-700">
           <span className="text-sm font-medium text-gray-300">Console</span>
           <button

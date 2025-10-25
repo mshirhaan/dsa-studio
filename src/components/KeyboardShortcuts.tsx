@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 
 export function KeyboardShortcuts() {
-  const { undo, redo, setViewMode, setActiveTool } = useStore();
+  const { undo, redo, setViewMode, setActiveTool, fontSize, setFontSize } = useStore();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -21,6 +21,24 @@ export function KeyboardShortcuts() {
       ) {
         e.preventDefault();
         redo();
+      }
+
+      // Ctrl/Cmd + Plus: Zoom in
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        setFontSize(Math.min(32, fontSize + 2));
+      }
+
+      // Ctrl/Cmd + Minus: Zoom out
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        setFontSize(Math.max(10, fontSize - 2));
+      }
+
+      // Ctrl/Cmd + 0: Reset zoom
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        setFontSize(14);
       }
 
       // Ctrl/Cmd + 1: Split view
@@ -80,7 +98,7 @@ export function KeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, setViewMode, setActiveTool]);
+  }, [undo, redo, setViewMode, setActiveTool, fontSize, setFontSize]);
 
   return null;
 }

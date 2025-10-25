@@ -10,6 +10,7 @@ import {
   Download,
   Upload,
   Layers,
+  GripVertical,
 } from 'lucide-react';
 import { CodeEditor } from './CodeEditor';
 import { DrawingCanvas } from './DrawingCanvas';
@@ -36,6 +37,7 @@ export function MainLayout() {
   const [showSessionMenu, setShowSessionMenu] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSaveSession = () => {
     const name = prompt('Enter session name:');
@@ -74,8 +76,10 @@ export function MainLayout() {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (isResizing) {
-      const newRatio = e.clientX / window.innerWidth;
+    if (isResizing && containerRef.current) {
+      // Use container's bounding rect to account for browser zoom
+      const rect = containerRef.current.getBoundingClientRect();
+      const newRatio = (e.clientX - rect.left) / rect.width;
       setSplitRatio(newRatio);
     }
   };
@@ -235,7 +239,7 @@ export function MainLayout() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
+      <div ref={containerRef} className="flex-1 flex overflow-hidden">
         {viewMode === 'split' && (
           <>
             <div
@@ -244,10 +248,16 @@ export function MainLayout() {
             >
               <CodeEditor />
             </div>
+            {/* Resize handle */}
             <div
               onMouseDown={handleMouseDown}
-              className="w-1 bg-gray-700 hover:bg-blue-500 cursor-col-resize transition-colors"
-            />
+              className="w-2 bg-gray-700 hover:bg-blue-500 cursor-col-resize transition-colors flex items-center justify-center group relative select-none"
+              style={{ minWidth: '8px' }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <GripVertical size={20} className="text-gray-500 group-hover:text-blue-300 transition-colors" />
+              </div>
+            </div>
             <div className="flex-1 flex flex-col">
               <DrawingToolbar />
               <div className="flex-1">
