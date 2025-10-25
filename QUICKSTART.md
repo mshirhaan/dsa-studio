@@ -1,6 +1,6 @@
 # 🚀 Quick Start Guide
 
-## Welcome to DSA Teaching Studio!
+## Welcome to DSA Studio!
 
 This guide will help you get started with your new teaching tool in just 5 minutes.
 

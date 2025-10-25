@@ -1,4 +1,4 @@
-// Core types for DSA Teaching Studio
+// Core types for DSA Studio
 
 export type ViewMode = 'split' | 'code-only' | 'draw-only' | 'pip';
 

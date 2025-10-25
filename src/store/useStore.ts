@@ -76,7 +76,7 @@ const defaultCodeFile: CodeFile = {
   id: 'default-1',
   name: 'main.js',
   language: 'javascript',
-  content: `// Welcome to DSA Teaching Studio!
+  content: `// Welcome to DSA Studio!
 // Write your code here and click Run to execute
 
 function bubbleSort(arr) {

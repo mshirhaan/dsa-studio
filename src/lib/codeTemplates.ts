@@ -1,4 +1,4 @@
-// Code templates for DSA Teaching Studio
+// Code templates for DSA Studio
 // Simplified version without complex template literals
 
 export interface CodeTemplate {

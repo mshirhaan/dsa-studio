@@ -1,6 +1,6 @@
 # 📋 Quick Reference Card
 
-## 🎨 DSA Teaching Studio - Quick Reference
+## 🎨 DSA Studio - Quick Reference
 
 ### 🚀 Getting Started
 ```bash

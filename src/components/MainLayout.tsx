@@ -114,7 +114,7 @@ export function MainLayout() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Layers className="text-blue-500" size={24} />
-            <h1 className="text-xl font-bold">DSA Teaching Studio</h1>
+            <h1 className="text-xl font-bold">DSA Studio</h1>
           </div>
           <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">Phase 1 MVP</span>
         </div>

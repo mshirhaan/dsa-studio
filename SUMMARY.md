@@ -1,8 +1,8 @@
-# 🎉 Project Summary - DSA Teaching Studio
+# 🎉 Project Summary - DSA Studio
 
 ## What We Built
 
-Congratulations! You now have a **fully functional Phase 1 MVP** of the DSA Teaching Studio - a comprehensive web-based teaching tool designed specifically for Data Structures & Algorithms instruction.
+Congratulations! You now have a **fully functional Phase 1 MVP** of the DSA Studio - a comprehensive web-based teaching tool designed specifically for Data Structures & Algorithms instruction.
 
 ---
 

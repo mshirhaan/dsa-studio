@@ -1,4 +1,4 @@
-# ✅ Feature Checklist - DSA Teaching Studio
+# ✅ Feature Checklist - DSA Studio
 
 ## Implementation Status
 

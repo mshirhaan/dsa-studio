@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document explains the structure and organization of the DSA Teaching Studio codebase.
+This document explains the structure and organization of the DSA Studio codebase.
 
 ## Directory Structure
 

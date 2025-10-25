@@ -1,8 +1,8 @@
-# 🎓 DSA Teaching Studio
+# 🎓 DSA Studio
 
 A comprehensive web-based teaching tool designed for Data Structures & Algorithms instruction, combining a powerful code editor with a fully-featured drawing canvas for live teaching, screen sharing, and interactive demonstrations.
 
-![DSA Teaching Studio](https://img.shields.io/badge/Phase-MVP%20Complete-success)
+![DSA Studio](https://img.shields.io/badge/Phase-MVP%20Complete-success)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
 ![React](https://img.shields.io/badge/React-19-blue)

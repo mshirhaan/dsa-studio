@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DSA Teaching Studio",
+  title: "DSA Studio",
   description: "A comprehensive web-based teaching tool for Data Structures & Algorithms",
 };
 
