@@ -29,6 +29,9 @@ export function ShortcutsPanel() {
       { keys: [modKey, 'Z'], description: 'Undo' },
       { keys: [modKey, 'Shift', 'Z'], description: 'Redo' },
       { keys: [modKey, 'Y'], description: 'Redo (Alt)' },
+      { keys: [modKey, 'C'], description: 'Copy Selected' },
+      { keys: [modKey, 'V'], description: 'Paste' },
+      { keys: [modKey, 'D'], description: 'Duplicate Selected' },
       { keys: ['Delete'], description: 'Delete Selected' },
     ]},
     { category: 'Tools (Single Key)', items: [

@@ -24,6 +24,9 @@ interface StoreActions {
   updateDrawingElement: (id: string, updates: Partial<DrawingElement>) => void;
   deleteDrawingElements: (ids: string[]) => void;
   setSelectedElements: (ids: string[]) => void;
+  copySelectedElements: () => void;
+  pasteElements: () => void;
+  duplicateSelectedElements: () => void;
   setActiveTool: (tool: AppState['activeTool']) => void;
   setStrokeColor: (color: string) => void;
   setStrokeWidth: (width: number) => void;
@@ -96,6 +99,7 @@ const initialState: AppState = {
   isRunning: false,
   drawingElements: [],
   selectedElementIds: [],
+  clipboard: [], // For copy/paste
   activeTool: 'pen',
   strokeColor: '#3B82F6',
   strokeWidth: 2,
@@ -181,6 +185,61 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   }),
   
   setSelectedElements: (ids) => set({ selectedElementIds: ids }),
+  
+  copySelectedElements: () => set((state) => {
+    const selectedElements = state.drawingElements.filter(el => 
+      state.selectedElementIds.includes(el.id)
+    );
+    return { clipboard: selectedElements };
+  }),
+  
+  pasteElements: () => set((state) => {
+    if (state.clipboard.length === 0) return state;
+    
+    // Create copies of clipboard elements with new IDs and offset positions
+    const offset = 20; // Offset by 20px to see the pasted elements
+    const newElements = state.clipboard.map(el => ({
+      ...el,
+      id: Date.now().toString() + Math.random(),
+      points: el.points.map(p => ({ x: p.x + offset, y: p.y + offset })),
+    }));
+    
+    const updatedElements = [...state.drawingElements, ...newElements];
+    get().addToHistory(updatedElements);
+    
+    // Select the newly pasted elements
+    const newIds = newElements.map(el => el.id);
+    return { 
+      drawingElements: updatedElements,
+      selectedElementIds: newIds,
+    };
+  }),
+  
+  duplicateSelectedElements: () => set((state) => {
+    const selectedElements = state.drawingElements.filter(el => 
+      state.selectedElementIds.includes(el.id)
+    );
+    
+    if (selectedElements.length === 0) return state;
+    
+    // Create copies with new IDs and offset positions
+    const offset = 20; // Offset by 20px
+    const newElements = selectedElements.map(el => ({
+      ...el,
+      id: Date.now().toString() + Math.random(),
+      points: el.points.map(p => ({ x: p.x + offset, y: p.y + offset })),
+    }));
+    
+    const updatedElements = [...state.drawingElements, ...newElements];
+    get().addToHistory(updatedElements);
+    
+    // Select the newly duplicated elements
+    const newIds = newElements.map(el => el.id);
+    return { 
+      drawingElements: updatedElements,
+      selectedElementIds: newIds,
+    };
+  }),
   setActiveTool: (tool) => set({ activeTool: tool }),
   setStrokeColor: (color) => set({ strokeColor: color }),
   setStrokeWidth: (width) => set({ strokeWidth: width }),

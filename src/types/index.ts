@@ -98,6 +98,7 @@ export interface AppState {
   // Drawing canvas state
   drawingElements: DrawingElement[];
   selectedElementIds: string[];
+  clipboard: DrawingElement[]; // For copy/paste
   activeTool: DrawingTool;
   strokeColor: string;
   strokeWidth: number;

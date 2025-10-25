@@ -4,7 +4,17 @@ import { useEffect } from 'react';
 import { useStore } from '@/store/useStore';
 
 export function KeyboardShortcuts() {
-  const { undo, redo, setViewMode, setActiveTool, fontSize, setFontSize } = useStore();
+  const { 
+    undo, 
+    redo, 
+    setViewMode, 
+    setActiveTool, 
+    fontSize, 
+    setFontSize,
+    copySelectedElements,
+    pasteElements,
+    duplicateSelectedElements,
+  } = useStore();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -21,6 +31,24 @@ export function KeyboardShortcuts() {
       ) {
         e.preventDefault();
         redo();
+      }
+
+      // Ctrl/Cmd + C: Copy
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.shiftKey) {
+        e.preventDefault();
+        copySelectedElements();
+      }
+
+      // Ctrl/Cmd + V: Paste
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !e.shiftKey) {
+        e.preventDefault();
+        pasteElements();
+      }
+
+      // Ctrl/Cmd + D: Duplicate
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        duplicateSelectedElements();
       }
 
       // Ctrl/Cmd + Plus: Zoom in
@@ -106,7 +134,7 @@ export function KeyboardShortcuts() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, setViewMode, setActiveTool, fontSize, setFontSize]);
+  }, [undo, redo, setViewMode, setActiveTool, fontSize, setFontSize, copySelectedElements, pasteElements, duplicateSelectedElements]);
 
   return null;
 }
