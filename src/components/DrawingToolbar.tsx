@@ -24,16 +24,16 @@ import {
 } from 'lucide-react';
 
 const tools = [
-  { id: 'select' as const, icon: MousePointer2, label: 'Select', shortcut: 'V' },
+  { id: 'select' as const, icon: MousePointer2, label: 'Select', shortcut: 'S' },
   { id: 'pen' as const, icon: Pencil, label: 'Pen', shortcut: 'P' },
-  { id: 'laser' as const, icon: Zap, label: 'Laser Pointer', shortcut: 'Z' },
+  { id: 'laser' as const, icon: Zap, label: 'Laser Pointer', shortcut: 'K' },
   { id: 'eraser' as const, icon: Eraser, label: 'Eraser', shortcut: 'E' },
   { id: 'line' as const, icon: Minus, label: 'Line', shortcut: 'L' },
   { id: 'arrow' as const, icon: ArrowRight, label: 'Arrow', shortcut: 'A' },
   { id: 'rectangle' as const, icon: Square, label: 'Rectangle', shortcut: 'R' },
   { id: 'circle' as const, icon: Circle, label: 'Circle', shortcut: 'C' },
-  { id: 'triangle' as const, icon: Triangle, label: 'Triangle', shortcut: 'T' },
-  { id: 'text' as const, icon: Type, label: 'Text', shortcut: 'X' },
+  { id: 'triangle' as const, icon: Triangle, label: 'Triangle', shortcut: 'X' },
+  { id: 'text' as const, icon: Type, label: 'Text', shortcut: 'T' },
   { id: 'pan' as const, icon: Hand, label: 'Pan', shortcut: 'H' },
 ];
 

@@ -62,13 +62,13 @@ export function KeyboardShortcuts() {
       // Tool shortcuts (no modifiers)
       if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
         switch (e.key.toLowerCase()) {
-          case 'v':
+          case 's':
             setActiveTool('select');
             break;
           case 'p':
             setActiveTool('pen');
             break;
-          case 'z':
+          case 'k':
             setActiveTool('laser');
             break;
           case 'e':
@@ -85,6 +85,9 @@ export function KeyboardShortcuts() {
             break;
           case 'c':
             setActiveTool('circle');
+            break;
+          case 'x':
+            setActiveTool('triangle');
             break;
           case 't':
             setActiveTool('text');

@@ -23,9 +23,12 @@
 - [x] Switch between files
 - [x] Dark theme (vs-dark)
 - [x] Adjustable font size
+- [x] Cmd/Ctrl + Plus/Minus for zoom in/out ✨ NEW
+- [x] Cmd/Ctrl + 0 to reset zoom ✨ NEW
 - [x] Word wrap
 - [x] Code execution (JavaScript/TypeScript)
 - [x] Console output display (logs, errors, warnings, info)
+- [x] Resizable console with drag handle ✨ NEW
 - [x] Download code files
 - [x] Run button (Ctrl+R)
 - [x] Clear console
@@ -40,9 +43,10 @@
   - [x] Rectangle
   - [x] Circle/Ellipse
   - [x] Triangle
-  - [x] Text tool
+  - [x] Text tool (inline editing with Excalidraw-style interface) ✨ NEW
   - [x] Select tool (with drag & multi-select) ✨ NEW
   - [x] Pan tool
+  - [x] Laser pointer tool (temporary red marks that fade) ✨ NEW
 - [x] Color picker (11 preset colors)
 - [x] Custom stroke width (1-20px slider)
 - [x] Fill color options
@@ -50,6 +54,8 @@
 - [x] Opacity control (0-100%)
 - [x] Zoom controls (25%-400%)
 - [x] Pan functionality
+- [x] Cmd/Ctrl + Mouse Wheel zoom (centered on mouse) ✨ NEW
+- [x] Mouse wheel infinite scrolling (vertical & horizontal with Shift) ✨ NEW
 - [x] Custom background colors
 - [x] Undo/Redo (50-state history)
 - [x] Clear canvas
@@ -57,6 +63,12 @@
 - [x] Drag-to-select multiple elements ✨ NEW
 - [x] Drag selected elements to move ✨ NEW
 - [x] Proper circle selection bounds ✨ NEW
+- [x] Resize elements with 8 handles (corners + edges) ✨ NEW
+- [x] Shift key to lock aspect ratio during resize ✨ NEW
+- [x] Dynamic resize cursors on hover ✨ NEW
+- [x] Multi-line text support (Shift+Enter for new lines) ✨ NEW
+- [x] Double-click text to re-edit ✨ NEW
+- [x] Text auto-save on tool switch ✨ NEW
 
 #### ✅ Export Features
 - [x] Export canvas as PNG
@@ -83,10 +95,31 @@
 - [x] Ctrl+Shift+Z / Ctrl+Y (Cmd on macOS): Redo ✨ NEW
 - [x] Ctrl+R (Cmd on macOS): Run code ✨ NEW
 - [x] Ctrl+S (Cmd on macOS): Save session ✨ NEW
-- [x] Single-key tool shortcuts (V, P, E, L, A, R, C, T, H)
-- [x] Delete: Delete selected elements
+- [x] Cmd/Ctrl + Plus/Minus: Zoom code editor ✨ NEW
+- [x] Cmd/Ctrl + 0: Reset code editor zoom ✨ NEW
+- [x] Cmd/Ctrl + Mouse Wheel: Zoom canvas (centered on mouse) ✨ NEW
+- [x] Mouse Wheel: Pan canvas vertically ✨ NEW
+- [x] Shift + Mouse Wheel: Pan canvas horizontally ✨ NEW
+- [x] Single-key tool shortcuts (S, P, K, E, L, A, R, C, X, T, H)
+- [x] S: Select tool
+- [x] P: Pen tool
+- [x] K: Laser pointer ✨ NEW
+- [x] E: Eraser
+- [x] L: Line
+- [x] A: Arrow
+- [x] R: Rectangle
+- [x] C: Circle
+- [x] X: Triangle ✨ NEW
+- [x] T: Text ✨ NEW
+- [x] H: Pan tool
+- [x] Delete/Backspace: Delete selected elements
+- [x] Shift: Lock aspect ratio during resize ✨ NEW
+- [x] Shift+Enter: New line in text editor ✨ NEW
+- [x] Escape: Cancel text editing ✨ NEW
+- [x] Enter: Save text ✨ NEW
 - [x] Keyboard shortcuts help panel (floating button)
 - [x] Platform detection (macOS vs Windows/Linux) ✨ NEW
+- [x] Visible keyboard shortcut badges on tools ✨ NEW
 
 #### ✅ UI/UX
 - [x] Dark theme optimized
@@ -144,6 +177,23 @@
 - [x] Drag-to-select multiple elements ✨ NEW
 - [x] Drag selected elements to move ✨ NEW
 - [x] Proper circle selection bounds ✨ NEW
+- [x] Resize elements with 8 handles ✨ NEW
+  - [x] Corner handles (NW, NE, SE, SW)
+  - [x] Edge handles (N, E, S, W)
+  - [x] Visual blue handles with white borders
+  - [x] Shift key to lock aspect ratio
+  - [x] Dynamic resize cursors (↖↘, ↗↙, ↕, ↔)
+  - [x] Works with all element types (shapes, text, pen drawings)
+  - [x] Single and multiple selection support
+  - [x] Live preview during resize
+  - [x] Minimum size constraint
+- [x] Text element improvements ✨ NEW
+  - [x] Inline text editing (Excalidraw-style)
+  - [x] Multi-line text support (Shift+Enter)
+  - [x] Double-click to re-edit
+  - [x] Auto-save on tool switch
+  - [x] Proper text bounds calculation
+  - [x] Font size scales with resize
 - [ ] Rulers (horizontal/vertical)
 - [ ] Alignment guides
 - [ ] Clone/duplicate elements
@@ -351,22 +401,28 @@
 **Phase 1 MVP:**
 - ✅ **100% Complete** (all features implemented)
 - 🎨 **6 components** created
-- 📝 **10+ drawing tools** available
-- ⌨️ **20+ keyboard shortcuts** (macOS & Windows/Linux)
+- 📝 **12 drawing tools** available (including laser pointer)
+- ⌨️ **30+ keyboard shortcuts** (macOS & Windows/Linux)
 - 💾 **Full session management**
 - 📤 **Multiple export formats**
+- 🖱️ **Advanced mouse controls** (wheel zoom/pan)
+- 📏 **Element resizing** with 8 handles
 
 **Phase 2 Enhanced:**
-- ✅ **80% Complete**
+- ✅ **85% Complete**
 - 🎯 **10 code templates**
 - 📐 **Grid system with snap**
 - 📊 **Multiple slides**
-- 🖱️ **Advanced selection (drag-to-select)**
-- 🍎 **macOS support (Cmd key)**
+- 🖱️ **Advanced selection** (drag-to-select, multi-select)
+- 🔄 **Element resizing** (8 handles, aspect ratio lock)
+- ✏️ **Inline text editing** (Excalidraw-style)
+- 📝 **Multi-line text support**
+- 🍎 **macOS support** (Cmd key)
+- 🎨 **Dynamic cursors** for all tools
 
 **Total Features:**
-- ✅ Completed: **70+ features**
-- 📋 In Progress (Phase 2): **10+ features**
+- ✅ Completed: **85+ features**
+- 📋 In Progress (Phase 2): **8+ features**
 - 🚀 Future (Phase 3): **50+ features**
 - 🎯 Premium (Phase 4): **30+ features**
 
@@ -377,6 +433,8 @@
 - ✅ Dark theme optimized
 - ✅ Well-documented
 - ✅ Cross-platform (macOS, Windows, Linux)
+- ✅ 1200+ lines of drawing logic
+- ✅ Comprehensive feature set
 
 ---
 
