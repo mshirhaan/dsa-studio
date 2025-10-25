@@ -618,12 +618,15 @@ export function DrawingCanvas() {
       ctx.setLineDash([5, 5]);
       ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
       
-      // Draw resize handles for selected elements
+      // Draw resize handles for selected elements (only corners)
       const handles = getResizeHandles(bounds);
       ctx.fillStyle = '#3B82F6';
       ctx.setLineDash([]);
       
-      Object.values(handles).forEach(handle => {
+      // Only show corner handles (nw, ne, se, sw)
+      const cornerHandles = ['nw', 'ne', 'se', 'sw'];
+      cornerHandles.forEach(key => {
+        const handle = handles[key as keyof typeof handles];
         ctx.fillRect(handle.x, handle.y, handle.width, handle.height);
         ctx.strokeStyle = '#FFFFFF';
         ctx.lineWidth = 1 / zoom;
@@ -746,8 +749,12 @@ export function DrawingCanvas() {
   // Check if a point is on a resize handle
   const getResizeHandleAtPoint = (point: Point, bounds: { x: number; y: number; width: number; height: number }): string | null => {
     const handles = getResizeHandles(bounds);
+    const edgeThreshold = 5; // Pixels from edge to trigger resize
     
-    for (const [name, handle] of Object.entries(handles)) {
+    // First check corner handles (they have priority)
+    const cornerHandles = ['nw', 'ne', 'se', 'sw'];
+    for (const name of cornerHandles) {
+      const handle = handles[name as keyof typeof handles];
       if (
         point.x >= handle.x &&
         point.x <= handle.x + handle.width &&
@@ -756,6 +763,47 @@ export function DrawingCanvas() {
       ) {
         return name;
       }
+    }
+    
+    // Check edges (entire line, not just middle handle)
+    // Top edge
+    if (
+      point.y >= bounds.y - edgeThreshold &&
+      point.y <= bounds.y + edgeThreshold &&
+      point.x >= bounds.x &&
+      point.x <= bounds.x + bounds.width
+    ) {
+      return 'n';
+    }
+    
+    // Bottom edge
+    if (
+      point.y >= bounds.y + bounds.height - edgeThreshold &&
+      point.y <= bounds.y + bounds.height + edgeThreshold &&
+      point.x >= bounds.x &&
+      point.x <= bounds.x + bounds.width
+    ) {
+      return 's';
+    }
+    
+    // Left edge
+    if (
+      point.x >= bounds.x - edgeThreshold &&
+      point.x <= bounds.x + edgeThreshold &&
+      point.y >= bounds.y &&
+      point.y <= bounds.y + bounds.height
+    ) {
+      return 'w';
+    }
+    
+    // Right edge
+    if (
+      point.x >= bounds.x + bounds.width - edgeThreshold &&
+      point.x <= bounds.x + bounds.width + edgeThreshold &&
+      point.y >= bounds.y &&
+      point.y <= bounds.y + bounds.height
+    ) {
+      return 'e';
     }
     
     return null;
