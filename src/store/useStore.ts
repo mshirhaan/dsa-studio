@@ -53,6 +53,7 @@ interface StoreActions {
   undo: () => void;
   redo: () => void;
   addToHistory: (elements: DrawingElement[]) => void;
+  saveCurrentStateToHistory: () => void; // Helper to save current drawingElements
   
   // Session actions
   saveSession: (name: string) => void;
@@ -338,6 +339,11 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
       historyIndex: Math.min(newHistory.length - 1, 49),
     };
   }),
+  
+  saveCurrentStateToHistory: () => {
+    const state = get();
+    get().addToHistory(state.drawingElements);
+  },
   
   undo: () => set((state) => {
     if (state.historyIndex > 0) {

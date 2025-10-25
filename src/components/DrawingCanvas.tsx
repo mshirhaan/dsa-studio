@@ -58,6 +58,7 @@ export function DrawingCanvas() {
     selectedElementIds,
     setSelectedElements,
     setPanOffset,
+    saveCurrentStateToHistory,
   } = useStore();
 
   // Set up canvas size
@@ -1210,12 +1211,20 @@ export function DrawingCanvas() {
   const handleMouseUp = () => {
     // Handle resize completion
     if (isResizing) {
+      saveCurrentStateToHistory(); // Save history after resize
       setIsResizing(false);
       setResizeHandle(null);
       setResizeStartBounds(null);
       setResizeStartPoint(null);
       setResizeStartElements([]); // Clear stored elements
       return;
+    }
+    
+    // Handle dragging completion
+    if (isDragging) {
+      saveCurrentStateToHistory(); // Save history after drag
+      setIsDragging(false);
+      setDragStartPoint(null);
     }
     
     // Handle box selection completion
@@ -1259,8 +1268,12 @@ export function DrawingCanvas() {
     }
     setIsDrawing(false);
     setStartPoint(null);
-    setIsDragging(false);
-    setDragStartPoint(null);
+    
+    // Only reset dragging if not already handled
+    if (!isDragging) {
+      setIsDragging(false);
+      setDragStartPoint(null);
+    }
   };
 
   const handleDoubleClick = (e: MouseEvent<HTMLCanvasElement>) => {
