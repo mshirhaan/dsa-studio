@@ -94,6 +94,7 @@ export interface AppState {
   // Console state
   consoleOutput: ConsoleOutput[];
   isRunning: boolean;
+  autoRun: boolean;
   
   // Drawing canvas state
   drawingElements: DrawingElement[];

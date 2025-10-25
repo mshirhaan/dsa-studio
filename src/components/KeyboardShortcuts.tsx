@@ -18,35 +18,50 @@ export function KeyboardShortcuts() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + Z: Undo
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      // Check if user is typing in an input, textarea, contenteditable, or Monaco editor
+      const target = e.target as HTMLElement;
+      const isTyping = 
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.contentEditable === 'true' ||
+        target.closest('.monaco-editor'); // Monaco editor
+      
+      // Skip tool shortcuts (single letter keys without modifiers) if typing
+      const isToolShortcut = !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey;
+      
+      if (isTyping && isToolShortcut) {
+        return; // Let the editor handle the keypress
+      }
+
+      // Ctrl/Cmd + Z: Undo (only for drawing, Monaco handles its own undo)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && !isTyping) {
         e.preventDefault();
         undo();
       }
 
-      // Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y: Redo
+      // Ctrl/Cmd + Shift + Z or Ctrl/Cmd + Y: Redo (only for drawing)
       if (
-        ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) ||
-        ((e.ctrlKey || e.metaKey) && e.key === 'y')
+        (((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) ||
+        ((e.ctrlKey || e.metaKey) && e.key === 'y')) && !isTyping
       ) {
         e.preventDefault();
         redo();
       }
 
-      // Ctrl/Cmd + C: Copy
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.shiftKey) {
+      // Ctrl/Cmd + C: Copy (only for drawing elements)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c' && !e.shiftKey && !isTyping) {
         e.preventDefault();
         copySelectedElements();
       }
 
-      // Ctrl/Cmd + V: Paste
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !e.shiftKey) {
+      // Ctrl/Cmd + V: Paste (only for drawing elements)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v' && !e.shiftKey && !isTyping) {
         e.preventDefault();
         pasteElements();
       }
 
-      // Ctrl/Cmd + D: Duplicate
-      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+      // Ctrl/Cmd + D: Duplicate (only for drawing elements)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd' && !isTyping) {
         e.preventDefault();
         duplicateSelectedElements();
       }
@@ -87,7 +102,7 @@ export function KeyboardShortcuts() {
         setViewMode('draw-only');
       }
 
-      // Tool shortcuts (no modifiers)
+      // Tool shortcuts (no modifiers) - already blocked if typing
       if (!e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
         switch (e.key.toLowerCase()) {
           case 's':

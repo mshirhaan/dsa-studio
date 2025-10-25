@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStore } from '@/store/useStore';
-import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal } from 'lucide-react';
+import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal, Zap } from 'lucide-react';
 
 export function CodeEditor() {
   const {
@@ -22,6 +22,8 @@ export function CodeEditor() {
     addConsoleOutput,
     clearConsole,
     setIsRunning,
+    autoRun,
+    setAutoRun,
   } = useStore();
 
   const activeFile = codeFiles.find(f => f.id === activeFileId);
@@ -86,6 +88,17 @@ export function CodeEditor() {
       };
     }
   }, [isResizing, consoleHeight]);
+
+  // Auto-run effect with debouncing
+  useEffect(() => {
+    if (!autoRun || !activeFile) return;
+    
+    const timeoutId = setTimeout(() => {
+      handleRun();
+    }, 100); // 500ms debounce
+    
+    return () => clearTimeout(timeoutId);
+  }, [activeFile?.content, autoRun]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Zoom controls
   const handleZoomIn = () => {
@@ -320,12 +333,24 @@ export function CodeEditor() {
 
           <button
             onClick={handleRun}
-            disabled={isRunning}
+            disabled={isRunning || autoRun}
             className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded text-sm transition-colors"
-            title="Run code (Ctrl+R)"
+            title="Run code (Cmd+R)"
           >
             {isRunning ? <Square size={14} /> : <Play size={14} />}
             {isRunning ? 'Running...' : 'Run'}
+          </button>
+          <button
+            onClick={() => setAutoRun(!autoRun)}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${
+              autoRun 
+                ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+            }`}
+            title="Auto-run code on changes"
+          >
+            <Zap size={14} className={autoRun ? 'animate-pulse' : ''} />
+            Auto-Run
           </button>
           <button
             onClick={handleDownload}

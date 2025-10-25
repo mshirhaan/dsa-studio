@@ -15,6 +15,7 @@ interface StoreActions {
   setActiveFile: (id: string) => void;
   setEditorTheme: (theme: AppState['editorTheme']) => void;
   setFontSize: (size: number) => void;
+  setAutoRun: (enabled: boolean) => void;
   
   // Console actions
   addConsoleOutput: (output: Omit<ConsoleOutput, 'id' | 'timestamp'>) => void;
@@ -106,6 +107,7 @@ const initialState: AppState = {
   fontSize: 14,
   consoleOutput: [],
   isRunning: false,
+  autoRun: false,
   drawingElements: [],
   selectedElementIds: [],
   clipboard: [], // For copy/paste
@@ -167,6 +169,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   setActiveFile: (id) => set({ activeFileId: id }),
   setEditorTheme: (theme) => set({ editorTheme: theme }),
   setFontSize: (size) => set({ fontSize: size }),
+  setAutoRun: (enabled) => set({ autoRun: enabled }),
   
   // Console actions
   addConsoleOutput: (output) => set((state) => ({
