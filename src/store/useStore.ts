@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppState, CodeFile, DrawingElement, ConsoleOutput, Session } from '@/types';
+import { AppState, CodeFile, DrawingElement, ConsoleOutput, Session, Language } from '@/types';
 
 interface StoreActions {
   // View mode actions
@@ -9,6 +9,7 @@ interface StoreActions {
   // Code editor actions
   addCodeFile: (file: CodeFile) => void;
   updateCodeFile: (id: string, content: string) => void;
+  renameCodeFile: (id: string, name: string, language: Language) => void;
   deleteCodeFile: (id: string) => void;
   setActiveFile: (id: string) => void;
   setEditorTheme: (theme: AppState['editorTheme']) => void;
@@ -136,6 +137,12 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   
   updateCodeFile: (id, content) => set((state) => ({
     codeFiles: state.codeFiles.map(f => f.id === id ? { ...f, content } : f),
+  })),
+  
+  renameCodeFile: (id, name, language) => set((state) => ({
+    codeFiles: state.codeFiles.map(f => 
+      f.id === id ? { ...f, name, language } : f
+    ),
   })),
   
   deleteCodeFile: (id) => set((state) => {

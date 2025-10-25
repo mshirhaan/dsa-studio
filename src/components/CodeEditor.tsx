@@ -13,6 +13,7 @@ export function CodeEditor() {
     fontSize,
     setFontSize,
     updateCodeFile,
+    renameCodeFile,
     setActiveFile,
     addCodeFile,
     deleteCodeFile,
@@ -29,6 +30,27 @@ export function CodeEditor() {
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartY = useRef(0);
   const startHeight = useRef(0);
+  const [editingFileId, setEditingFileId] = useState<string | null>(null);
+  const [editingFileName, setEditingFileName] = useState('');
+  
+  // Helper function to detect language from file extension
+  const getLanguageFromExtension = (filename: string): 'javascript' | 'python' | 'cpp' | 'java' | 'typescript' => {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    const langMap: Record<string, 'javascript' | 'python' | 'cpp' | 'java' | 'typescript'> = {
+      'js': 'javascript',
+      'py': 'python',
+      'cpp': 'cpp',
+      'cc': 'cpp',
+      'cxx': 'cpp',
+      'c': 'cpp',
+      'h': 'cpp',
+      'hpp': 'cpp',
+      'java': 'java',
+      'ts': 'typescript',
+      'tsx': 'typescript',
+    };
+    return langMap[ext || ''] || 'javascript';
+  };
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -182,6 +204,33 @@ export function CodeEditor() {
     URL.revokeObjectURL(url);
   };
 
+  const handleFileDoubleClick = (fileId: string, currentName: string) => {
+    setEditingFileId(fileId);
+    setEditingFileName(currentName);
+  };
+
+  const handleFileNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditingFileName(e.target.value);
+  };
+
+  const handleFileNameBlur = () => {
+    if (editingFileId && editingFileName.trim()) {
+      const newLanguage = getLanguageFromExtension(editingFileName);
+      renameCodeFile(editingFileId, editingFileName.trim(), newLanguage);
+    }
+    setEditingFileId(null);
+    setEditingFileName('');
+  };
+
+  const handleFileNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleFileNameBlur();
+    } else if (e.key === 'Escape') {
+      setEditingFileId(null);
+      setEditingFileName('');
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Toolbar */}
@@ -191,14 +240,33 @@ export function CodeEditor() {
           {codeFiles.map(file => (
             <div
               key={file.id}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm cursor-pointer transition-colors ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${
                 file.id === activeFileId
                   ? 'bg-gray-900 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-650'
               }`}
-              onClick={() => setActiveFile(file.id)}
             >
-              <span>{file.name}</span>
+              {editingFileId === file.id ? (
+                <input
+                  type="text"
+                  value={editingFileName}
+                  onChange={handleFileNameChange}
+                  onBlur={handleFileNameBlur}
+                  onKeyDown={handleFileNameKeyDown}
+                  className="bg-gray-800 text-white px-2 py-0.5 rounded border border-blue-500 focus:outline-none w-32"
+                  autoFocus
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span
+                  className="cursor-pointer"
+                  onClick={() => setActiveFile(file.id)}
+                  onDoubleClick={() => handleFileDoubleClick(file.id, file.name)}
+                  title="Double-click to rename"
+                >
+                  {file.name}
+                </span>
+              )}
               {codeFiles.length > 1 && (
                 <button
                   onClick={(e) => {
