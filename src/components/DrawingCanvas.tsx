@@ -566,7 +566,7 @@ export function DrawingCanvas() {
       case 'text':
         if (element.text && element.points.length > 0) {
           const fontSize = element.fontSize || 16;
-          ctx.font = `${fontSize}px Kalam, cursive`;
+          ctx.font = `${fontSize}px Architects Daughter, cursive`;
           ctx.fillStyle = element.color;
           ctx.textBaseline = 'alphabetic'; // Use alphabetic baseline (default)
           
@@ -637,7 +637,7 @@ export function DrawingCanvas() {
             
             // Index label (above)
             ctx.fillStyle = '#9CA3AF';
-            ctx.font = `${Math.max(10, boxSize * 0.25)}px Kalam, cursive`;
+            ctx.font = `${Math.max(10, boxSize * 0.25)}px Architects Daughter, cursive`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             ctx.fillText(i.toString(), x + boxSize / 2, y - 4);
@@ -647,7 +647,7 @@ export function DrawingCanvas() {
               const values = element.text.split(',');
               if (i < values.length && values[i].trim()) {
                 ctx.fillStyle = element.color;
-                ctx.font = `${Math.max(12, boxSize * 0.35)}px Kalam, cursive`;
+                ctx.font = `${Math.max(12, boxSize * 0.35)}px Architects Daughter, cursive`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(values[i].trim(), x + boxSize / 2, y + boxSize / 2);
@@ -695,7 +695,7 @@ export function DrawingCanvas() {
               const values = element.text.split(',');
               if (i < values.length && values[i].trim()) {
                 ctx.fillStyle = element.color;
-                ctx.font = `${Math.max(12, nodeHeight * 0.4)}px Kalam, cursive`;
+                ctx.font = `${Math.max(12, nodeHeight * 0.4)}px Architects Daughter, cursive`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(values[i].trim(), nodeX + valueBoxWidth / 2, nodeY + nodeHeight / 2);
@@ -724,7 +724,7 @@ export function DrawingCanvas() {
             } else {
               // Draw NULL for last node
               ctx.fillStyle = '#9CA3AF';
-              ctx.font = `${Math.max(8, nodeHeight * 0.25)}px Kalam, cursive`;
+              ctx.font = `${Math.max(8, nodeHeight * 0.25)}px Architects Daughter, cursive`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('NULL', arrowCenterX, arrowCenterY);
@@ -802,7 +802,7 @@ export function DrawingCanvas() {
               // Draw value
               if (valueIndex < values.length) {
                 ctx.fillStyle = element.color;
-                ctx.font = `${Math.max(10, nodeRadius * 0.8)}px Kalam, cursive`;
+                ctx.font = `${Math.max(10, nodeRadius * 0.8)}px Architects Daughter, cursive`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(values[valueIndex], xPos, yPos);
@@ -845,7 +845,7 @@ export function DrawingCanvas() {
             
             // Draw index number
             ctx.fillStyle = '#9CA3AF';
-            ctx.font = `${Math.max(10, bucketHeight * 0.3)}px Kalam, cursive`;
+            ctx.font = `${Math.max(10, bucketHeight * 0.3)}px Architects Daughter, cursive`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(i.toString(), start.x + bucketWidth / 2, y + bucketHeight / 2);
@@ -864,7 +864,7 @@ export function DrawingCanvas() {
               
               // Draw key (or full entry if no colon)
               ctx.fillStyle = element.color;
-              ctx.font = `${Math.max(10, bucketHeight * 0.35)}px Kalam, cursive`;
+              ctx.font = `${Math.max(10, bucketHeight * 0.35)}px Architects Daughter, cursive`;
               ctx.textAlign = 'left';
               ctx.textBaseline = 'middle';
               
@@ -886,7 +886,7 @@ export function DrawingCanvas() {
             } else {
               // Draw "null" for empty buckets
               ctx.fillStyle = '#6B7280';
-              ctx.font = `${Math.max(8, bucketHeight * 0.25)}px Kalam, cursive`;
+              ctx.font = `${Math.max(8, bucketHeight * 0.25)}px Architects Daughter, cursive`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('null', start.x + bucketWidth + valueWidth / 2, y + bucketHeight / 2);
@@ -895,7 +895,7 @@ export function DrawingCanvas() {
           
           // Draw "Hash Map" label on top
           ctx.fillStyle = '#9CA3AF';
-          ctx.font = `${Math.max(12, bucketHeight * 0.4)}px Kalam, cursive`;
+          ctx.font = `${Math.max(12, bucketHeight * 0.4)}px Architects Daughter, cursive`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'bottom';
           ctx.fillText('Hash Map', start.x + totalWidth / 2, start.y - 5);
@@ -924,7 +924,7 @@ export function DrawingCanvas() {
           for (let row = 0; row < maxRows; row++) {
             const y = start.y + (row * cellHeight);
             ctx.fillStyle = '#9CA3AF';
-            ctx.font = `${Math.max(8, cellHeight * 0.25)}px Kalam, cursive`;
+            ctx.font = `${Math.max(8, cellHeight * 0.25)}px Architects Daughter, cursive`;
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
             ctx.fillText(row.toString(), start.x - 10, y + cellHeight / 2);
@@ -934,7 +934,7 @@ export function DrawingCanvas() {
           for (let col = 0; col < maxCols; col++) {
             const x = start.x + (col * cellWidth);
             ctx.fillStyle = '#9CA3AF';
-            ctx.font = `${Math.max(8, cellWidth * 0.25)}px Kalam, cursive`;
+            ctx.font = `${Math.max(8, cellWidth * 0.25)}px Architects Daughter, cursive`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
             ctx.fillText(col.toString(), x + cellWidth / 2, start.y - 5);
@@ -959,7 +959,7 @@ export function DrawingCanvas() {
               // Draw value
               if (valueIndex < values.length && values[valueIndex]) {
                 ctx.fillStyle = element.color;
-                ctx.font = `${Math.max(10, Math.min(cellWidth, cellHeight) * 0.4)}px Kalam, cursive`;
+                ctx.font = `${Math.max(10, Math.min(cellWidth, cellHeight) * 0.4)}px Architects Daughter, cursive`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(values[valueIndex], x + cellWidth / 2, y + cellHeight / 2);
@@ -970,7 +970,7 @@ export function DrawingCanvas() {
           
           // Draw "Matrix" label
           ctx.fillStyle = '#9CA3AF';
-          ctx.font = `${Math.max(12, cellHeight * 0.4)}px Kalam, cursive`;
+          ctx.font = `${Math.max(12, cellHeight * 0.4)}px Architects Daughter, cursive`;
           ctx.textAlign = 'left';
           ctx.textBaseline = 'bottom';
           ctx.fillText('Matrix', start.x, start.y - 20);
@@ -998,7 +998,7 @@ export function DrawingCanvas() {
           // Draw value/label
           if (element.text) {
             ctx.fillStyle = element.color;
-            ctx.font = `${Math.max(14, radius * 0.6)}px Kalam, cursive`;
+            ctx.font = `${Math.max(14, radius * 0.6)}px Architects Daughter, cursive`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(element.text, center.x, center.y);
@@ -1043,7 +1043,7 @@ export function DrawingCanvas() {
         if (ctx) {
           const fontSize = element.fontSize || 16;
           const lineHeight = fontSize * 1.5;
-          ctx.font = `${fontSize}px Kalam, cursive`;
+          ctx.font = `${fontSize}px Architects Daughter, cursive`;
           
           // Split text by newlines
           const lines = element.text.split('\n');
@@ -2085,8 +2085,8 @@ export function DrawingCanvas() {
             wordWrap: 'normal',
             overflowWrap: 'normal',
             tabSize: 4, // Tab width
-            fontFamily: 'Kalam, cursive', // Handwritten font
-            fontWeight: 400, // Normal weight for Kalam
+            fontFamily: 'Architects Daughter, cursive', // Handwritten font
+            fontWeight: 400, // Normal weight for Architects Daughter
           }}
           rows={textEdit.text.split('\n').length || 1} // Dynamic rows based on newlines
           data-canvas-x={textEdit.canvasPoint.x}
