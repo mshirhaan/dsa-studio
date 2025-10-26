@@ -39,6 +39,7 @@ export function DrawingCanvas() {
   const {
     drawingElements,
     activeTool,
+    setActiveTool,
     strokeColor,
     strokeWidth,
     fillColor,
@@ -1857,7 +1858,7 @@ export function DrawingCanvas() {
   const handleDoubleClick = (e: MouseEvent<HTMLCanvasElement>) => {
     const point = getMousePos(e);
     
-    // Find if we double-clicked on a text element
+    // Check if we double-clicked on an existing text element
     for (let i = drawingElements.length - 1; i >= 0; i--) {
       const element = drawingElements[i];
       
@@ -1872,6 +1873,9 @@ export function DrawingCanvas() {
         point.y >= bounds.y &&
         point.y <= bounds.y + bounds.height
       ) {
+        // Switch to text tool
+        setActiveTool('text');
+        
         // Found a text element - enable editing
         setTextEdit({
           canvasPoint: element.points[0],
@@ -1887,6 +1891,17 @@ export function DrawingCanvas() {
         return;
       }
     }
+    
+    // No text element found - create new text at double-click position
+    // Automatically switch to text tool and start editing
+    setActiveTool('text');
+    setTextEdit({
+      canvasPoint: point,
+      text: ''
+    });
+    
+    // Mark that we just created the textarea
+    justCreatedTextarea.current = true;
   };
 
   const handleKeyDown = (e: KeyboardEvent) => {
