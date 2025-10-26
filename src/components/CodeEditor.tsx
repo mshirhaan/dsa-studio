@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStore } from '@/store/useStore';
-import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal, Zap } from 'lucide-react';
+import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal, Flashlight, Zap } from 'lucide-react';
 import { executeCode } from '@/lib/pistonApi';
 import { LaserPointer } from './LaserPointer';
 
@@ -364,9 +364,9 @@ export function CodeEditor() {
                 ? 'bg-red-600 hover:bg-red-700 text-white' 
                 : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
             }`}
-            title="Laser pointer for teaching (L key)"
+            title="Laser pointer for teaching"
           >
-            <Zap size={14} className={codeLaserActive ? 'animate-pulse' : ''} />
+            <Flashlight size={14} className={codeLaserActive ? 'animate-pulse' : ''} />
             Laser
           </button>
 
