@@ -975,6 +975,35 @@ export function DrawingCanvas() {
           ctx.fillText('Matrix', start.x, start.y - 20);
         }
         break;
+      
+      case 'graph-node':
+        if (element.points.length > 0) {
+          const center = element.points[0];
+          const radius = 25; // Fixed radius for graph nodes
+          
+          // Draw circle
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+          
+          // Fill
+          if (element.fillColor && element.fillColor !== 'transparent') {
+            ctx.fillStyle = element.fillColor;
+            ctx.fill();
+          }
+          
+          // Stroke
+          ctx.stroke();
+          
+          // Draw value/label
+          if (element.text) {
+            ctx.fillStyle = element.color;
+            ctx.font = `${Math.max(14, radius * 0.6)}px Kalam, cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(element.text, center.x, center.y);
+          }
+        }
+        break;
     }
 
     // Draw selection box
@@ -1474,6 +1503,24 @@ export function DrawingCanvas() {
       };
       setCurrentElement(element);
       return;
+    }
+    
+    // Handle Graph Node tool (single click to place)
+    if (activeTool === 'graph-node') {
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'graph-node',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Node label/value
+        fontSize: 14,
+      };
+      addDrawingElement(element);
+      return; // No dragging needed for graph nodes
     }
 
     setIsDrawing(true);

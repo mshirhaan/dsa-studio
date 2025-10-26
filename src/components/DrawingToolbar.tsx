@@ -28,6 +28,7 @@ import {
   GitBranch,
   Hash,
   Grid2x2,
+  Network,
 } from 'lucide-react';
 
 const tools = [
@@ -51,6 +52,7 @@ const dsaTools = [
   { id: 'tree' as const, icon: GitBranch, label: 'Tree', shortcut: 'B' },
   { id: 'hashmap' as const, icon: Hash, label: 'Hash Map', shortcut: 'M' },
   { id: 'matrix' as const, icon: Grid2x2, label: 'Matrix', shortcut: 'D' },
+  { id: 'graph-node' as const, icon: Network, label: 'Graph Node', shortcut: 'G' },
 ];
 
 const colors = [

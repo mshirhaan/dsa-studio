@@ -21,7 +21,8 @@ export type DrawingTool =
   | 'linked-list'
   | 'tree'
   | 'hashmap'
-  | 'matrix';
+  | 'matrix'
+  | 'graph-node';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 
