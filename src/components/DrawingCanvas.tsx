@@ -1392,6 +1392,10 @@ export function DrawingCanvas() {
           };
           addDrawingElement(element);
         }
+        // Close text edit mode and switch to select tool
+        setTextEdit(null);
+        setActiveTool('select');
+        return;
       }
       
       // Start text editing at this point
