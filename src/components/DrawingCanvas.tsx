@@ -731,6 +731,86 @@ export function DrawingCanvas() {
           }
         }
         break;
+      
+      case 'tree':
+        if (element.points.length >= 2) {
+          const start = element.points[0];
+          const end = element.points[element.points.length - 1];
+          const totalWidth = Math.abs(end.x - start.x);
+          const totalHeight = Math.abs(end.y - start.y);
+          
+          // Node size
+          const nodeRadius = Math.max(15, Math.min(totalHeight / 6, totalWidth / 10));
+          
+          // Calculate number of levels based on drag size
+          const maxLevels = Math.max(1, Math.min(4, Math.floor((totalHeight / (nodeRadius * 3))))); // Max 4 levels
+          
+          // Get values from text (comma-separated)
+          const values = element.text ? element.text.split(',').map(v => v.trim()).filter(v => v) : [];
+          
+          // Calculate tree width needed
+          const treeWidth = Math.max(totalWidth, nodeRadius * 4 * Math.pow(2, maxLevels - 1));
+          const levelHeight = Math.max(nodeRadius * 3, totalHeight / maxLevels);
+          
+          let valueIndex = 0;
+          
+          // Draw tree level by level
+          for (let level = 0; level < maxLevels; level++) {
+            const nodesInLevel = Math.pow(2, level);
+            const yPos = start.y + (level * levelHeight) + nodeRadius;
+            
+            for (let nodeInLevel = 0; nodeInLevel < nodesInLevel; nodeInLevel++) {
+              // Calculate x position to center nodes in their space
+              const spacing = treeWidth / (nodesInLevel + 1);
+              const xPos = start.x + spacing * (nodeInLevel + 1);
+              
+              // Draw edges to children (if not last level)
+              if (level < maxLevels - 1) {
+                const childY = yPos + levelHeight;
+                const childSpacing = treeWidth / (Math.pow(2, level + 1) + 1);
+                const leftChildX = start.x + childSpacing * (nodeInLevel * 2 + 1);
+                const rightChildX = start.x + childSpacing * (nodeInLevel * 2 + 2);
+                
+                ctx.strokeStyle = element.color;
+                ctx.lineWidth = element.strokeWidth;
+                
+                // Left edge
+                ctx.beginPath();
+                ctx.moveTo(xPos, yPos + nodeRadius);
+                ctx.lineTo(leftChildX, childY - nodeRadius);
+                ctx.stroke();
+                
+                // Right edge
+                ctx.beginPath();
+                ctx.moveTo(xPos, yPos + nodeRadius);
+                ctx.lineTo(rightChildX, childY - nodeRadius);
+                ctx.stroke();
+              }
+              
+              // Draw node circle
+              ctx.beginPath();
+              ctx.arc(xPos, yPos, nodeRadius, 0, Math.PI * 2);
+              if (element.fillColor && element.fillColor !== 'transparent') {
+                ctx.fillStyle = element.fillColor;
+                ctx.fill();
+              }
+              ctx.strokeStyle = element.color;
+              ctx.lineWidth = element.strokeWidth;
+              ctx.stroke();
+              
+              // Draw value
+              if (valueIndex < values.length) {
+                ctx.fillStyle = element.color;
+                ctx.font = `${Math.max(10, nodeRadius * 0.8)}px Kalam, cursive`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(values[valueIndex], xPos, yPos);
+                valueIndex++;
+              }
+            }
+          }
+        }
+        break;
     }
 
     // Draw selection box
@@ -1166,6 +1246,26 @@ export function DrawingCanvas() {
         opacity,
         lineStyle,
         text: '', // Node value
+        fontSize: 14,
+      };
+      setCurrentElement(element);
+      return;
+    }
+    
+    // Handle Tree tool
+    if (activeTool === 'tree') {
+      setIsDrawing(true);
+      setStartPoint(point);
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'tree',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Node values (comma-separated, level-order)
         fontSize: 14,
       };
       setCurrentElement(element);

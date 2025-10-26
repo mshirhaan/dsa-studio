@@ -18,7 +18,8 @@ export type DrawingTool =
   | 'laser'
   | 'image'
   | 'array'
-  | 'linked-list';
+  | 'linked-list'
+  | 'tree';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 

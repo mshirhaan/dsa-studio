@@ -25,6 +25,7 @@ import {
   Image as ImageIcon,
   SquareStack,
   Link2,
+  GitBranch,
 } from 'lucide-react';
 
 const tools = [
@@ -45,6 +46,7 @@ const tools = [
 const dsaTools = [
   { id: 'array' as const, icon: SquareStack, label: 'Array', shortcut: 'Y' },
   { id: 'linked-list' as const, icon: Link2, label: 'Linked List', shortcut: 'N' },
+  { id: 'tree' as const, icon: GitBranch, label: 'Tree', shortcut: 'B' },
 ];
 
 const colors = [
