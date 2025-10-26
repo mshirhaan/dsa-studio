@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { useStore } from '@/store/useStore';
 import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal, Zap } from 'lucide-react';
+import { executeCode } from '@/lib/pistonApi';
 
 export function CodeEditor() {
   const {
@@ -113,45 +114,45 @@ export function CodeEditor() {
     setFontSize(14);
   };
 
-  const handleRun = () => {
+  const handleRun = async () => {
     if (!activeFile || isRunning) return;
     
     setIsRunning(true);
     clearConsole();
     
     try {
-      // Create a custom console
-      const customConsole = {
-        log: (...args: any[]) => {
-          addConsoleOutput({
-            type: 'log',
-            content: args.map(arg => 
-              typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-            ).join(' '),
-          });
-        },
-        error: (...args: any[]) => {
-          addConsoleOutput({
-            type: 'error',
-            content: args.map(arg => String(arg)).join(' '),
-          });
-        },
-        warn: (...args: any[]) => {
-          addConsoleOutput({
-            type: 'warn',
-            content: args.map(arg => String(arg)).join(' '),
-          });
-        },
-        info: (...args: any[]) => {
-          addConsoleOutput({
-            type: 'info',
-            content: args.map(arg => String(arg)).join(' '),
-          });
-        },
-      };
-
-      // Execute code
+      // Check if it's JavaScript/TypeScript (run locally)
       if (activeFile.language === 'javascript' || activeFile.language === 'typescript') {
+        // Create a custom console
+        const customConsole = {
+          log: (...args: any[]) => {
+            addConsoleOutput({
+              type: 'log',
+              content: args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+              ).join(' '),
+            });
+          },
+          error: (...args: any[]) => {
+            addConsoleOutput({
+              type: 'error',
+              content: args.map(arg => String(arg)).join(' '),
+            });
+          },
+          warn: (...args: any[]) => {
+            addConsoleOutput({
+              type: 'warn',
+              content: args.map(arg => String(arg)).join(' '),
+            });
+          },
+          info: (...args: any[]) => {
+            addConsoleOutput({
+              type: 'info',
+              content: args.map(arg => String(arg)).join(' '),
+            });
+          },
+        };
+
         // Create a sandboxed function
         const sandboxedCode = `
           (function(console) {
@@ -160,22 +161,44 @@ export function CodeEditor() {
         `;
         const fn = eval(sandboxedCode);
         fn(customConsole);
-      } else if (activeFile.language === 'python') {
+        
         addConsoleOutput({
-          type: 'warn',
-          content: 'Python execution not yet supported. Coming soon!',
+          type: 'info',
+          content: '✓ Execution completed successfully',
         });
       } else {
-        addConsoleOutput({
-          type: 'warn',
-          content: `${activeFile.language} execution not yet supported. Coming soon!`,
-        });
+        // Use Piston API for other languages (Python, Java, C++)
+        const result = await executeCode(activeFile.language, activeFile.content);
+        
+        // Display stdout
+        if (result.run.stdout) {
+          addConsoleOutput({
+            type: 'log',
+            content: result.run.stdout,
+          });
+        }
+        
+        // Display stderr
+        if (result.run.stderr) {
+          addConsoleOutput({
+            type: 'error',
+            content: result.run.stderr,
+          });
+        }
+        
+        // Display exit code
+        if (result.run.code === 0) {
+          addConsoleOutput({
+            type: 'info',
+            content: `✓ Execution completed successfully (exit code: ${result.run.code})`,
+          });
+        } else {
+          addConsoleOutput({
+            type: 'error',
+            content: `✗ Execution failed (exit code: ${result.run.code})`,
+          });
+        }
       }
-      
-      addConsoleOutput({
-        type: 'info',
-        content: '✓ Execution completed successfully',
-      });
     } catch (error: any) {
       addConsoleOutput({
         type: 'error',
