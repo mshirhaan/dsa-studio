@@ -2,15 +2,19 @@
 
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { X, ChevronDown, ChevronRight, ExternalLink, CheckCircle2, Circle, Clock, GitCommit, Github } from 'lucide-react';
+import { X, ChevronDown, ChevronRight, ExternalLink, CheckCircle2, Circle, Clock, GitCommit, Github, Edit3 } from 'lucide-react';
 import { Problem, RoadmapTopic } from '@/types';
 import CommitSolutionModal from './CommitSolutionModal';
 
 export function RoadmapPanel() {
-  const { roadmapTopics, showRoadmap, setShowRoadmap, updateProblemStatus, updateProblemNotes } = useStore();
+  const { roadmapTopics, showRoadmap, setShowRoadmap, updateProblemStatus, updateProblemNotes, updateProblemCommitInfo } = useStore();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedProblem, setSelectedProblem] = useState<{ topicId: string; problem: Problem } | null>(null);
   const [showCommitModal, setShowCommitModal] = useState(false);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualGithubUrl, setManualGithubUrl] = useState('');
+  const [manualFileName, setManualFileName] = useState('');
+  const [manualDate, setManualDate] = useState('');
 
   if (!showRoadmap) return null;
 
@@ -63,6 +67,36 @@ export function RoadmapPanel() {
       case 'hard':
         return 'text-red-400';
     }
+  };
+  
+  const handleManualEntry = () => {
+    if (!selectedProblem || !manualGithubUrl.trim()) return;
+    
+    // Extract commit SHA from GitHub URL if possible
+    const shaMatch = manualGithubUrl.match(/\/commit\/([a-f0-9]+)/);
+    const commitSha = shaMatch ? shaMatch[1] : '';
+    
+    // Parse the date if provided, otherwise use current date
+    let completedDate = Date.now();
+    if (manualDate) {
+      const parsedDate = new Date(manualDate);
+      if (!isNaN(parsedDate.getTime())) {
+        completedDate = parsedDate.getTime();
+      }
+    }
+    
+    updateProblemCommitInfo(selectedProblem.topicId, selectedProblem.problem.id, {
+      githubCommitUrl: manualGithubUrl.trim(),
+      solutionFileName: manualFileName.trim() || 'solution',
+      commitSha,
+      completedDate,
+    });
+    
+    // Reset form
+    setManualGithubUrl('');
+    setManualFileName('');
+    setManualDate('');
+    setShowManualEntry(false);
   };
 
   const totalProgress = getTotalProgress();
@@ -394,6 +428,74 @@ export function RoadmapPanel() {
               <GitCommit size={16} />
               {selectedProblem.problem.githubCommitUrl ? 'Update Solution' : 'Commit Solution'}
             </button>
+            
+            {/* Manual Entry Toggle */}
+            {!showManualEntry ? (
+              <button
+                onClick={() => setShowManualEntry(true)}
+                className="flex items-center justify-center gap-2 w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium transition-colors"
+              >
+                <Edit3 size={16} />
+                Add Solution Manually
+              </button>
+            ) : (
+              <div className="bg-gray-900 rounded-lg p-3 space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-300">Manual Entry</span>
+                  <button
+                    onClick={() => {
+                      setShowManualEntry(false);
+                      setManualGithubUrl('');
+                      setManualFileName('');
+                      setManualDate('');
+                    }}
+                    className="text-xs text-gray-400 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">GitHub Commit URL *</label>
+                  <input
+                    type="text"
+                    value={manualGithubUrl}
+                    onChange={(e) => setManualGithubUrl(e.target.value)}
+                    placeholder="https://github.com/username/repo/commit/..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Solution File Name (optional)</label>
+                  <input
+                    type="text"
+                    value={manualFileName}
+                    onChange={(e) => setManualFileName(e.target.value)}
+                    placeholder="solution.js"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Completion Date (optional)</label>
+                  <input
+                    type="date"
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+                
+                <button
+                  onClick={handleManualEntry}
+                  disabled={!manualGithubUrl.trim()}
+                  className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded text-sm font-medium transition-colors"
+                >
+                  Save & Mark Completed
+                </button>
+              </div>
+            )}
             
             {/* Notes */}
             <div>

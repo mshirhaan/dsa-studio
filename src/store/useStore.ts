@@ -70,7 +70,7 @@ interface StoreActions {
   updateProblemStatus: (topicId: string, problemId: string, status: Problem['status']) => void;
   updateProblemNotes: (topicId: string, problemId: string, notes: string) => void;
   incrementProblemAttempts: (topicId: string, problemId: string) => void;
-  updateProblemCommitInfo: (topicId: string, problemId: string, commitInfo: { githubCommitUrl: string; solutionFileName: string; commitSha: string }) => void;
+  updateProblemCommitInfo: (topicId: string, problemId: string, commitInfo: { githubCommitUrl: string; solutionFileName: string; commitSha: string; completedDate?: number }) => void;
 }
 
 const defaultCodeFile: CodeFile = {
@@ -580,7 +580,7 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
                     solutionFileName: commitInfo.solutionFileName,
                     commitSha: commitInfo.commitSha,
                     status: 'completed' as const,
-                    completedDate: Date.now(),
+                    completedDate: commitInfo.completedDate ?? Date.now(),
                   }
                 : problem
             ),
