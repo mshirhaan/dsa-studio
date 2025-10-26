@@ -16,7 +16,8 @@ export type DrawingTool =
   | 'text' 
   | 'pan'
   | 'laser'
-  | 'image';
+  | 'image'
+  | 'array';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 

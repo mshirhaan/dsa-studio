@@ -608,6 +608,53 @@ export function DrawingCanvas() {
           }
         }
         break;
+      
+      case 'array':
+        if (element.points.length >= 2) {
+          const start = element.points[0];
+          const end = element.points[element.points.length - 1];
+          const height = Math.abs(end.y - start.y);
+          const width = Math.abs(end.x - start.x);
+          
+          // Use height as box size (makes square boxes), with minimum size
+          const boxSize = Math.max(30, height); // Minimum 30px boxes
+          const numBoxes = Math.max(1, Math.floor(width / boxSize));
+          
+          // Draw array boxes
+          for (let i = 0; i < numBoxes; i++) {
+            const x = start.x + (i * boxSize);
+            const y = start.y;
+            
+            // Fill box
+            if (element.fillColor && element.fillColor !== 'transparent') {
+              ctx.fillStyle = element.fillColor;
+              ctx.fillRect(x, y, boxSize, boxSize);
+            }
+            
+            // Stroke box
+            ctx.strokeRect(x, y, boxSize, boxSize);
+            
+            // Index label (above)
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = `${Math.max(10, boxSize * 0.25)}px Kalam, cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(i.toString(), x + boxSize / 2, y - 4);
+            
+            // Value label (center)
+            if (element.text) {
+              const values = element.text.split(',');
+              if (i < values.length && values[i].trim()) {
+                ctx.fillStyle = element.color;
+                ctx.font = `${Math.max(12, boxSize * 0.35)}px Kalam, cursive`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(values[i].trim(), x + boxSize / 2, y + boxSize / 2);
+              }
+            }
+          }
+        }
+        break;
     }
 
     // Draw selection box
@@ -1006,6 +1053,26 @@ export function DrawingCanvas() {
       // Mark that we just created the textarea
       justCreatedTextarea.current = true;
       
+      return;
+    }
+    
+    // Handle Array tool
+    if (activeTool === 'array') {
+      setIsDrawing(true);
+      setStartPoint(point);
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'array',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Can add values like: "1,2,3,4,5"
+        fontSize: 14,
+      };
+      setCurrentElement(element);
       return;
     }
 

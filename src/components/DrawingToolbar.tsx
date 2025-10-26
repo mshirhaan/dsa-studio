@@ -23,6 +23,7 @@ import {
   Magnet,
   Zap,
   Image as ImageIcon,
+  SquareStack,
 } from 'lucide-react';
 
 const tools = [
@@ -38,6 +39,10 @@ const tools = [
   { id: 'text' as const, icon: Type, label: 'Text', shortcut: 'T' },
   { id: 'image' as const, icon: ImageIcon, label: 'Image', shortcut: 'I', isUpload: true },
   { id: 'pan' as const, icon: Hand, label: 'Pan', shortcut: 'H' },
+];
+
+const dsaTools = [
+  { id: 'array' as const, icon: SquareStack, label: 'Array', shortcut: 'Y' },
 ];
 
 const colors = [
@@ -203,6 +208,32 @@ export function DrawingToolbar() {
               className={`relative p-2 rounded transition-colors ${
                 activeTool === tool.id
                   ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+              title={`${tool.label} (${tool.shortcut})`}
+            >
+              <Icon size={18} />
+              <span className="absolute -top-1 -right-1 bg-gray-900 text-gray-400 text-[9px] font-mono px-1 py-0.5 rounded border border-gray-700 leading-none">
+                {tool.shortcut}
+              </span>
+            </button>
+          );
+        })}
+        
+        {/* Separator */}
+        <div className="w-px h-8 bg-gray-600 mx-2" />
+        
+        {/* DSA Tools */}
+        <span className="text-xs font-medium text-green-400 mr-2">DSA:</span>
+        {dsaTools.map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button
+              key={tool.id}
+              onClick={() => setActiveTool(tool.id)}
+              className={`relative p-2 rounded transition-colors ${
+                activeTool === tool.id
+                  ? 'bg-green-600 text-white'
                   : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
               }`}
               title={`${tool.label} (${tool.shortcut})`}
