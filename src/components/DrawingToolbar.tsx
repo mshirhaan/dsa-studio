@@ -33,7 +33,7 @@ import {
 
 const tools = [
   { id: 'select' as const, icon: MousePointer2, label: 'Select', shortcut: 'S' },
-  { id: 'pen' as const, icon: Pencil, label: 'Pen', shortcut: 'P' },
+  { id: 'pen' as const, icon: Pencil, label: 'Pen', shortcut: 'W' },
   { id: 'laser' as const, icon: Zap, label: 'Laser Pointer', shortcut: 'K' },
   { id: 'eraser' as const, icon: Eraser, label: 'Eraser', shortcut: 'E' },
   { id: 'line' as const, icon: Minus, label: 'Line', shortcut: 'L' },

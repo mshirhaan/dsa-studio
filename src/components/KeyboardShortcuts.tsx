@@ -108,7 +108,7 @@ export function KeyboardShortcuts() {
           case 's':
             setActiveTool('select');
             break;
-          case 'p':
+          case 'w':
             setActiveTool('pen');
             break;
           case 'k':
@@ -142,6 +142,25 @@ export function KeyboardShortcuts() {
             break;
           case 'h':
             setActiveTool('pan');
+            break;
+          // DSA Tools
+          case 'y':
+            setActiveTool('array');
+            break;
+          case 'n':
+            setActiveTool('linked-list');
+            break;
+          case 'b':
+            setActiveTool('tree');
+            break;
+          case 'm':
+            setActiveTool('hashmap');
+            break;
+          case 'd':
+            setActiveTool('matrix');
+            break;
+          case 'g':
+            setActiveTool('graph-node');
             break;
         }
       }
