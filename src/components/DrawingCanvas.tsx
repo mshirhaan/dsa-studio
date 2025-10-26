@@ -811,6 +811,95 @@ export function DrawingCanvas() {
           }
         }
         break;
+      
+      case 'hashmap':
+        if (element.points.length >= 2) {
+          const start = element.points[0];
+          const end = element.points[element.points.length - 1];
+          const dragWidth = Math.abs(end.x - start.x);
+          const totalHeight = Math.abs(end.y - start.y);
+          
+          // Bucket size
+          const bucketHeight = Math.max(40, totalHeight / 8); // Each bucket height
+          const bucketWidth = 60; // Fixed index column width
+          const valueWidth = Math.max(120, dragWidth); // Minimum 120px for values
+          const totalWidth = bucketWidth + valueWidth; // Total width
+          
+          // Calculate number of buckets based on height
+          const numBuckets = Math.max(3, Math.floor(totalHeight / bucketHeight));
+          
+          // Parse entries: format "key:value,key:value" or just "value,value"
+          const entries = element.text ? element.text.split(',').map(e => e.trim()).filter(e => e) : [];
+          
+          // Draw hash map structure
+          for (let i = 0; i < numBuckets; i++) {
+            const y = start.y + (i * bucketHeight);
+            
+            // Draw index box (left side)
+            if (element.fillColor && element.fillColor !== 'transparent') {
+              ctx.fillStyle = '#374151'; // Darker gray for index
+              ctx.fillRect(start.x, y, bucketWidth, bucketHeight);
+            }
+            ctx.strokeRect(start.x, y, bucketWidth, bucketHeight);
+            
+            // Draw index number
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = `${Math.max(10, bucketHeight * 0.3)}px Kalam, cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(i.toString(), start.x + bucketWidth / 2, y + bucketHeight / 2);
+            
+            // Draw value box (right side)
+            if (element.fillColor && element.fillColor !== 'transparent') {
+              ctx.fillStyle = element.fillColor;
+              ctx.fillRect(start.x + bucketWidth, y, valueWidth, bucketHeight);
+            }
+            ctx.strokeRect(start.x + bucketWidth, y, valueWidth, bucketHeight);
+            
+            // Draw entries if available
+            if (i < entries.length && entries[i]) {
+              const entry = entries[i];
+              const [key, value] = entry.includes(':') ? entry.split(':') : [entry, ''];
+              
+              // Draw key (or full entry if no colon)
+              ctx.fillStyle = element.color;
+              ctx.font = `${Math.max(10, bucketHeight * 0.35)}px Kalam, cursive`;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              
+              if (value) {
+                // Draw key:value format
+                ctx.fillText(
+                  `${key} → ${value}`,
+                  start.x + bucketWidth + 10,
+                  y + bucketHeight / 2
+                );
+              } else {
+                // Just draw the value
+                ctx.fillText(
+                  key,
+                  start.x + bucketWidth + 10,
+                  y + bucketHeight / 2
+                );
+              }
+            } else {
+              // Draw "null" for empty buckets
+              ctx.fillStyle = '#6B7280';
+              ctx.font = `${Math.max(8, bucketHeight * 0.25)}px Kalam, cursive`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('null', start.x + bucketWidth + valueWidth / 2, y + bucketHeight / 2);
+            }
+          }
+          
+          // Draw "Hash Map" label on top
+          ctx.fillStyle = '#9CA3AF';
+          ctx.font = `${Math.max(12, bucketHeight * 0.4)}px Kalam, cursive`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('Hash Map', start.x + totalWidth / 2, start.y - 5);
+        }
+        break;
     }
 
     // Draw selection box
@@ -1266,6 +1355,26 @@ export function DrawingCanvas() {
         opacity,
         lineStyle,
         text: '', // Node values (comma-separated, level-order)
+        fontSize: 14,
+      };
+      setCurrentElement(element);
+      return;
+    }
+    
+    // Handle Hash Map tool
+    if (activeTool === 'hashmap') {
+      setIsDrawing(true);
+      setStartPoint(point);
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'hashmap',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Entries: "key:value,key:value" or "value,value"
         fontSize: 14,
       };
       setCurrentElement(element);

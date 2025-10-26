@@ -19,7 +19,8 @@ export type DrawingTool =
   | 'image'
   | 'array'
   | 'linked-list'
-  | 'tree';
+  | 'tree'
+  | 'hashmap';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 
