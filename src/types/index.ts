@@ -20,7 +20,8 @@ export type DrawingTool =
   | 'array'
   | 'linked-list'
   | 'tree'
-  | 'hashmap';
+  | 'hashmap'
+  | 'matrix';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 

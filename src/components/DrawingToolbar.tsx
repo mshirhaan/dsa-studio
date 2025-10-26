@@ -27,6 +27,7 @@ import {
   Link2,
   GitBranch,
   Hash,
+  Grid2x2,
 } from 'lucide-react';
 
 const tools = [
@@ -49,6 +50,7 @@ const dsaTools = [
   { id: 'linked-list' as const, icon: Link2, label: 'Linked List', shortcut: 'N' },
   { id: 'tree' as const, icon: GitBranch, label: 'Tree', shortcut: 'B' },
   { id: 'hashmap' as const, icon: Hash, label: 'Hash Map', shortcut: 'M' },
+  { id: 'matrix' as const, icon: Grid2x2, label: 'Matrix', shortcut: 'D' },
 ];
 
 const colors = [

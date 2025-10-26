@@ -900,6 +900,81 @@ export function DrawingCanvas() {
           ctx.fillText('Hash Map', start.x + totalWidth / 2, start.y - 5);
         }
         break;
+      
+      case 'matrix':
+        if (element.points.length >= 2) {
+          const start = element.points[0];
+          const end = element.points[element.points.length - 1];
+          const totalWidth = Math.abs(end.x - start.x);
+          const totalHeight = Math.abs(end.y - start.y);
+          
+          // Calculate cell size based on drag
+          const minCellSize = 30;
+          const maxRows = Math.max(2, Math.floor(totalHeight / minCellSize));
+          const maxCols = Math.max(2, Math.floor(totalWidth / minCellSize));
+          
+          const cellHeight = totalHeight / maxRows;
+          const cellWidth = totalWidth / maxCols;
+          
+          // Parse values: comma-separated, fills row by row
+          const values = element.text ? element.text.split(',').map(v => v.trim()) : [];
+          
+          // Draw row indices (left side)
+          for (let row = 0; row < maxRows; row++) {
+            const y = start.y + (row * cellHeight);
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = `${Math.max(8, cellHeight * 0.25)}px Kalam, cursive`;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(row.toString(), start.x - 10, y + cellHeight / 2);
+          }
+          
+          // Draw column indices (top)
+          for (let col = 0; col < maxCols; col++) {
+            const x = start.x + (col * cellWidth);
+            ctx.fillStyle = '#9CA3AF';
+            ctx.font = `${Math.max(8, cellWidth * 0.25)}px Kalam, cursive`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(col.toString(), x + cellWidth / 2, start.y - 5);
+          }
+          
+          // Draw grid cells
+          let valueIndex = 0;
+          for (let row = 0; row < maxRows; row++) {
+            for (let col = 0; col < maxCols; col++) {
+              const x = start.x + (col * cellWidth);
+              const y = start.y + (row * cellHeight);
+              
+              // Fill cell
+              if (element.fillColor && element.fillColor !== 'transparent') {
+                ctx.fillStyle = element.fillColor;
+                ctx.fillRect(x, y, cellWidth, cellHeight);
+              }
+              
+              // Stroke cell
+              ctx.strokeRect(x, y, cellWidth, cellHeight);
+              
+              // Draw value
+              if (valueIndex < values.length && values[valueIndex]) {
+                ctx.fillStyle = element.color;
+                ctx.font = `${Math.max(10, Math.min(cellWidth, cellHeight) * 0.4)}px Kalam, cursive`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(values[valueIndex], x + cellWidth / 2, y + cellHeight / 2);
+              }
+              valueIndex++;
+            }
+          }
+          
+          // Draw "Matrix" label
+          ctx.fillStyle = '#9CA3AF';
+          ctx.font = `${Math.max(12, cellHeight * 0.4)}px Kalam, cursive`;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('Matrix', start.x, start.y - 20);
+        }
+        break;
     }
 
     // Draw selection box
@@ -1375,6 +1450,26 @@ export function DrawingCanvas() {
         opacity,
         lineStyle,
         text: '', // Entries: "key:value,key:value" or "value,value"
+        fontSize: 14,
+      };
+      setCurrentElement(element);
+      return;
+    }
+    
+    // Handle Matrix tool
+    if (activeTool === 'matrix') {
+      setIsDrawing(true);
+      setStartPoint(point);
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'matrix',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Values: comma-separated, row by row
         fontSize: 14,
       };
       setCurrentElement(element);
