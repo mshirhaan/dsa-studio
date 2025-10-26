@@ -285,13 +285,13 @@ export function DrawingCanvas() {
   }, [panOffset, zoom, strokeColor, strokeWidth, fillColor, opacity, lineStyle, addDrawingElement]);
 
 
-  // Auto-focus text input when created
+  // Auto-focus text input when created (only once)
   useEffect(() => {
-    if (textEdit && textInputRef.current) {
+    if (textEdit && textInputRef.current && justCreatedTextarea.current) {
+      justCreatedTextarea.current = false;
       // Use setTimeout to ensure the textarea is rendered
       const timeoutId = setTimeout(() => {
         textInputRef.current?.focus();
-        // Move cursor to end of text
         const length = textInputRef.current?.value.length || 0;
         textInputRef.current?.setSelectionRange(length, length);
       }, 0);
@@ -565,7 +565,7 @@ export function DrawingCanvas() {
       case 'text':
         if (element.text && element.points.length > 0) {
           const fontSize = element.fontSize || 16;
-          ctx.font = `${fontSize}px monospace`;
+          ctx.font = `${fontSize}px Kalam, cursive`;
           ctx.fillStyle = element.color;
           ctx.textBaseline = 'alphabetic'; // Use alphabetic baseline (default)
           
@@ -646,7 +646,7 @@ export function DrawingCanvas() {
         if (ctx) {
           const fontSize = element.fontSize || 16;
           const lineHeight = fontSize * 1.5;
-          ctx.font = `${fontSize}px monospace`;
+          ctx.font = `${fontSize}px Kalam, cursive`;
           
           // Split text by newlines
           const lines = element.text.split('\n');
@@ -1532,7 +1532,7 @@ export function DrawingCanvas() {
           onChange={(e) => setTextEdit({ ...textEdit, text: e.target.value })}
           onKeyDown={handleTextKeyDown}
           autoFocus
-          className="absolute bg-transparent outline-none resize-none font-mono overflow-hidden"
+          className="absolute bg-transparent outline-none resize-none overflow-hidden"
           style={{
             left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
             top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
@@ -1552,6 +1552,8 @@ export function DrawingCanvas() {
             wordWrap: 'normal',
             overflowWrap: 'normal',
             tabSize: 4, // Tab width
+            fontFamily: 'Kalam, cursive', // Handwritten font
+            fontWeight: 400, // Normal weight for Kalam
           }}
           rows={textEdit.text.split('\n').length || 1} // Dynamic rows based on newlines
           data-canvas-x={textEdit.canvasPoint.x}
