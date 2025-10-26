@@ -145,6 +145,10 @@ export interface Problem {
   lastAttempt?: number;
   attempts: number;
   tags: string[];
+  // Git integration fields
+  githubCommitUrl?: string;
+  solutionFileName?: string;
+  commitSha?: string;
 }
 
 export interface RoadmapTopic {

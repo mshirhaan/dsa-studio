@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import { useStore } from '@/store/useStore';
-import { X, ChevronDown, ChevronRight, ExternalLink, CheckCircle2, Circle, Clock } from 'lucide-react';
+import { X, ChevronDown, ChevronRight, ExternalLink, CheckCircle2, Circle, Clock, GitCommit, Github } from 'lucide-react';
 import { Problem, RoadmapTopic } from '@/types';
+import CommitSolutionModal from './CommitSolutionModal';
 
 export function RoadmapPanel() {
   const { roadmapTopics, showRoadmap, setShowRoadmap, updateProblemStatus, updateProblemNotes } = useStore();
   const [expandedTopics, setExpandedTopics] = useState<Set<string>>(new Set());
   const [selectedProblem, setSelectedProblem] = useState<{ topicId: string; problem: Problem } | null>(null);
+  const [showCommitModal, setShowCommitModal] = useState(false);
 
   if (!showRoadmap) return null;
 
@@ -153,6 +155,11 @@ export function RoadmapPanel() {
                         >
                           {getStatusIcon(problem.status)}
                           <span className="flex-1 text-sm text-gray-300">{problem.title}</span>
+                          {problem.githubCommitUrl && (
+                            <span title="Solution committed">
+                              <Github size={14} className="text-blue-400" />
+                            </span>
+                          )}
                           <span className={`text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
                             {problem.difficulty}
                           </span>
@@ -210,6 +217,11 @@ export function RoadmapPanel() {
                         >
                           {getStatusIcon(problem.status)}
                           <span className="flex-1 text-sm text-gray-300">{problem.title}</span>
+                          {problem.githubCommitUrl && (
+                            <span title="Solution committed">
+                              <Github size={14} className="text-blue-400" />
+                            </span>
+                          )}
                           <span className={`text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
                             {problem.difficulty}
                           </span>
@@ -267,6 +279,11 @@ export function RoadmapPanel() {
                         >
                           {getStatusIcon(problem.status)}
                           <span className="flex-1 text-sm text-gray-300">{problem.title}</span>
+                          {problem.githubCommitUrl && (
+                            <span title="Solution committed">
+                              <Github size={14} className="text-blue-400" />
+                            </span>
+                          )}
                           <span className={`text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
                             {problem.difficulty}
                           </span>
@@ -356,6 +373,28 @@ export function RoadmapPanel() {
               </a>
             )}
             
+            {/* GitHub Solution Link */}
+            {selectedProblem.problem.githubCommitUrl && (
+              <a
+                href={selectedProblem.problem.githubCommitUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-sm font-medium transition-colors"
+              >
+                <Github size={16} />
+                View Solution on GitHub
+              </a>
+            )}
+            
+            {/* Commit Solution Button */}
+            <button
+              onClick={() => setShowCommitModal(true)}
+              className="flex items-center justify-center gap-2 w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-medium transition-colors"
+            >
+              <GitCommit size={16} />
+              {selectedProblem.problem.githubCommitUrl ? 'Update Solution' : 'Commit Solution'}
+            </button>
+            
             {/* Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2">Notes</label>
@@ -386,6 +425,15 @@ export function RoadmapPanel() {
             </div>
           </div>
         </div>
+      )}
+      
+      {/* Commit Solution Modal */}
+      {showCommitModal && selectedProblem && (
+        <CommitSolutionModal
+          problem={selectedProblem.problem}
+          topic={roadmapTopics.find(t => t.id === selectedProblem.topicId)!}
+          onClose={() => setShowCommitModal(false)}
+        />
       )}
     </div>
   );
