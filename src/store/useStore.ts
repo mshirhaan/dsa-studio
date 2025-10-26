@@ -73,7 +73,12 @@ interface StoreActions {
   updateProblemCommitInfo: (topicId: string, problemId: string, commitInfo: { githubCommitUrl: string; solutionFileName: string; commitSha: string; completedDate?: number }) => void;
   
   // Teaching mode actions
-  setTeachingMode: (mode: 'teaching' | 'qa' | 'break') => void;
+  setTeachingMode: (mode: 'teaching' | 'qa' | 'break' | 'challenge') => void;
+  
+  // Timer actions
+  startTimer: (duration: number) => void;
+  stopTimer: () => void;
+  resetTimer: () => void;
 }
 
 const defaultCodeFile: CodeFile = {
@@ -139,7 +144,13 @@ const initialState: AppState = {
   showRoadmap: false,
   
   // Teaching mode
-  teachingMode: 'teaching' as 'teaching' | 'qa' | 'break',
+  teachingMode: 'teaching' as 'teaching' | 'qa' | 'break' | 'challenge',
+  
+  // Timer
+  timerDuration: 300, // 5 minutes default
+  timerStartTime: null,
+  timerIsRunning: false,
+  timerPausedAt: null,
 };
 
 export const useStore = create<AppState & StoreActions>((set, get) => ({
@@ -597,6 +608,33 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
   
   // Teaching mode actions
   setTeachingMode: (mode) => set({ teachingMode: mode }),
+  
+  // Timer actions
+  startTimer: (duration) => set({ 
+    timerDuration: duration, 
+    timerStartTime: Date.now(), 
+    timerIsRunning: true,
+    timerPausedAt: null
+  }),
+  
+  stopTimer: () => {
+    const state = get();
+    if (state.timerIsRunning && state.timerStartTime) {
+      const elapsed = Math.floor((Date.now() - state.timerStartTime) / 1000);
+      const remaining = Math.max(0, state.timerDuration - elapsed);
+      set({ 
+        timerIsRunning: false,
+        timerPausedAt: remaining
+      });
+    }
+  },
+  
+  resetTimer: () => set({ 
+    timerStartTime: null, 
+    timerIsRunning: false,
+    timerDuration: 300,
+    timerPausedAt: null
+  }),
 }));
 
 // Load saved sessions on init

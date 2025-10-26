@@ -134,7 +134,13 @@ export interface AppState {
   showRoadmap: boolean;
   
   // Teaching mode
-  teachingMode: 'teaching' | 'qa' | 'break';
+  teachingMode: 'teaching' | 'qa' | 'break' | 'challenge';
+  
+  // Timer
+  timerDuration: number; // in seconds
+  timerStartTime: number | null; // timestamp when timer started
+  timerIsRunning: boolean;
+  timerPausedAt: number | null; // remaining seconds when paused
 }
 
 // Roadmap types
