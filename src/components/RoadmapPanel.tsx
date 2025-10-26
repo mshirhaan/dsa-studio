@@ -361,7 +361,15 @@ export function RoadmapPanel() {
               <label className="block text-sm font-medium text-gray-400 mb-2">Notes</label>
               <textarea
                 value={selectedProblem.problem.notes}
-                onChange={(e) => updateProblemNotes(selectedProblem.topicId, selectedProblem.problem.id, e.target.value)}
+                onChange={(e) => {
+                  const newNotes = e.target.value;
+                  updateProblemNotes(selectedProblem.topicId, selectedProblem.problem.id, newNotes);
+                  // Also update local state to reflect changes immediately
+                  setSelectedProblem({
+                    ...selectedProblem,
+                    problem: { ...selectedProblem.problem, notes: newNotes }
+                  });
+                }}
                 placeholder="Add your notes here..."
                 className="w-full h-24 p-2 bg-gray-700 text-white rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
