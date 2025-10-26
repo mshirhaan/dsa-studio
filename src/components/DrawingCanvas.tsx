@@ -32,6 +32,7 @@ export function DrawingCanvas() {
   const [textEdit, setTextEdit] = useState<{
     canvasPoint: Point;
     text: string;
+    fontSize?: number;
   } | null>(null);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
   const justCreatedTextarea = useRef(false);
@@ -1388,7 +1389,7 @@ export function DrawingCanvas() {
             opacity,
             lineStyle,
             text: textEdit.text,
-            fontSize: 28,
+            fontSize: textEdit.fontSize || 28, // Use preserved fontSize
           };
           addDrawingElement(element);
         }
@@ -1401,7 +1402,8 @@ export function DrawingCanvas() {
       // Start text editing at this point
       setTextEdit({
         canvasPoint: point,
-        text: ''
+        text: '',
+        fontSize: 28 // Default fontSize for new text
       });
       
       // Mark that we just created the textarea
@@ -1880,10 +1882,11 @@ export function DrawingCanvas() {
         // Switch to text tool
         setActiveTool('text');
         
-        // Found a text element - enable editing
+        // Found a text element - enable editing with preserved fontSize
         setTextEdit({
           canvasPoint: element.points[0],
-          text: element.text || ''
+          text: element.text || '',
+          fontSize: element.fontSize || 28
         });
         
         // Delete the old text element
@@ -1901,7 +1904,8 @@ export function DrawingCanvas() {
     setActiveTool('text');
     setTextEdit({
       canvasPoint: point,
-      text: ''
+      text: '',
+      fontSize: 28 // Default fontSize for new text
     });
     
     // Mark that we just created the textarea
@@ -2069,7 +2073,7 @@ export function DrawingCanvas() {
           style={{
             left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
             top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
-            fontSize: `${28 * zoom}px`, // Scale font size with zoom
+            fontSize: `${(textEdit.fontSize || 28) * zoom}px`, // Scale preserved font size with zoom
             lineHeight: '1.5',
             minWidth: `${200 * zoom}px`, // Scale min width with zoom
             height: 'auto', // Auto height based on content
