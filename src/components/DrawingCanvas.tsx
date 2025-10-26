@@ -1388,7 +1388,7 @@ export function DrawingCanvas() {
             opacity,
             lineStyle,
             text: textEdit.text,
-            fontSize: 16,
+            fontSize: 28,
           };
           addDrawingElement(element);
         }
@@ -2069,7 +2069,7 @@ export function DrawingCanvas() {
           style={{
             left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
             top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
-            fontSize: `${16 * zoom}px`, // Scale font size with zoom
+            fontSize: `${28 * zoom}px`, // Scale font size with zoom
             lineHeight: '1.5',
             minWidth: `${200 * zoom}px`, // Scale min width with zoom
             height: 'auto', // Auto height based on content
