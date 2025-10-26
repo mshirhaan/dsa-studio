@@ -79,6 +79,9 @@ interface StoreActions {
   startTimer: (duration: number) => void;
   stopTimer: () => void;
   resetTimer: () => void;
+  
+  // Laser pointer actions
+  toggleCodeLaser: () => void;
 }
 
 const defaultCodeFile: CodeFile = {
@@ -151,6 +154,9 @@ const initialState: AppState = {
   timerStartTime: null,
   timerIsRunning: false,
   timerPausedAt: null,
+  
+  // Laser pointer
+  codeLaserActive: false,
 };
 
 export const useStore = create<AppState & StoreActions>((set, get) => ({
@@ -635,6 +641,9 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
     timerDuration: 300,
     timerPausedAt: null
   }),
+  
+  // Laser pointer actions
+  toggleCodeLaser: () => set((state) => ({ codeLaserActive: !state.codeLaserActive })),
 }));
 
 // Load saved sessions on init

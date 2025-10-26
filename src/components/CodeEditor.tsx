@@ -5,6 +5,7 @@ import Editor from '@monaco-editor/react';
 import { useStore } from '@/store/useStore';
 import { Play, Square, Trash2, Download, Plus, X, ZoomIn, ZoomOut, GripHorizontal, Zap } from 'lucide-react';
 import { executeCode } from '@/lib/pistonApi';
+import { LaserPointer } from './LaserPointer';
 
 export function CodeEditor() {
   const {
@@ -25,6 +26,8 @@ export function CodeEditor() {
     setIsRunning,
     autoRun,
     setAutoRun,
+    codeLaserActive,
+    toggleCodeLaser,
   } = useStore();
 
   const activeFile = codeFiles.find(f => f.id === activeFileId);
@@ -355,6 +358,19 @@ export function CodeEditor() {
           <div className="w-px h-6 bg-gray-600" />
 
           <button
+            onClick={toggleCodeLaser}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm transition-colors ${
+              codeLaserActive 
+                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+            }`}
+            title="Laser pointer for teaching (L key)"
+          >
+            <Zap size={14} className={codeLaserActive ? 'animate-pulse' : ''} />
+            Laser
+          </button>
+
+          <button
             onClick={handleRun}
             disabled={isRunning || autoRun}
             className="flex items-center gap-2 px-3 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded text-sm transition-colors"
@@ -386,23 +402,27 @@ export function CodeEditor() {
       </div>
 
       {/* Editor */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 relative">
         {activeFile && (
-          <Editor
-            height="100%"
-            language={activeFile.language}
-            value={activeFile.content}
-            theme={editorTheme}
-            onChange={(value) => updateCodeFile(activeFile.id, value || '')}
-            options={{
-              fontSize,
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              wordWrap: 'on',
-              automaticLayout: true,
-              padding: { top: 16 },
-            }}
-          />
+          <>
+            <Editor
+              height="100%"
+              language={activeFile.language}
+              value={activeFile.content}
+              theme={editorTheme}
+              onChange={(value) => updateCodeFile(activeFile.id, value || '')}
+              options={{
+                fontSize,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                automaticLayout: true,
+                padding: { top: 16 },
+              }}
+            />
+            {/* Laser Pointer Overlay */}
+            <LaserPointer isActive={codeLaserActive} />
+          </>
         )}
       </div>
 

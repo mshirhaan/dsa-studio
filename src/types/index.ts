@@ -141,6 +141,9 @@ export interface AppState {
   timerStartTime: number | null; // timestamp when timer started
   timerIsRunning: boolean;
   timerPausedAt: number | null; // remaining seconds when paused
+  
+  // Laser pointer for code editor
+  codeLaserActive: boolean;
 }
 
 // Roadmap types
