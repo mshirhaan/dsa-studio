@@ -655,6 +655,82 @@ export function DrawingCanvas() {
           }
         }
         break;
+      
+      case 'linked-list':
+        if (element.points.length >= 2) {
+          const start = element.points[0];
+          const end = element.points[element.points.length - 1];
+          const totalWidth = Math.abs(end.x - start.x);
+          const height = Math.abs(end.y - start.y);
+          
+          // Single node size
+          const nodeHeight = Math.max(40, height);
+          const nodeWidth = nodeHeight * 2; // 2:1 ratio (width:height)
+          
+          // Calculate number of nodes based on drag width
+          const numNodes = Math.max(1, Math.floor(totalWidth / nodeWidth));
+          
+          // Draw multiple linked list nodes
+          for (let i = 0; i < numNodes; i++) {
+            const nodeX = start.x + (i * nodeWidth);
+            const nodeY = start.y;
+            
+            // Value box takes 70% of node width, pointer box takes 30%
+            const valueBoxWidth = nodeWidth * 0.7;
+            const pointerBoxWidth = nodeWidth * 0.3;
+
+            // Draw value box
+            if (element.fillColor && element.fillColor !== 'transparent') {
+              ctx.fillStyle = element.fillColor;
+              ctx.fillRect(nodeX, nodeY, valueBoxWidth, nodeHeight);
+            }
+            ctx.strokeRect(nodeX, nodeY, valueBoxWidth, nodeHeight);
+            
+            // Draw pointer box
+            ctx.strokeRect(nodeX + valueBoxWidth, nodeY, pointerBoxWidth, nodeHeight);
+            
+            // Draw value text
+            if (element.text) {
+              const values = element.text.split(',');
+              if (i < values.length && values[i].trim()) {
+                ctx.fillStyle = element.color;
+                ctx.font = `${Math.max(12, nodeHeight * 0.4)}px Kalam, cursive`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(values[i].trim(), nodeX + valueBoxWidth / 2, nodeY + nodeHeight / 2);
+              }
+            }
+            
+            // Draw arrow in pointer box (or NULL for last node)
+            const arrowCenterX = nodeX + valueBoxWidth + pointerBoxWidth / 2;
+            const arrowCenterY = nodeY + nodeHeight / 2;
+            const arrowSize = Math.min(pointerBoxWidth, nodeHeight) * 0.4;
+            
+            if (i < numNodes - 1) {
+              // Draw arrow to next node
+              ctx.beginPath();
+              ctx.moveTo(arrowCenterX - arrowSize, arrowCenterY);
+              ctx.lineTo(arrowCenterX + arrowSize * 0.5, arrowCenterY);
+              ctx.stroke();
+              
+              // Arrow head
+              ctx.beginPath();
+              ctx.moveTo(arrowCenterX + arrowSize * 0.5, arrowCenterY);
+              ctx.lineTo(arrowCenterX + arrowSize * 0.2, arrowCenterY - arrowSize * 0.4);
+              ctx.moveTo(arrowCenterX + arrowSize * 0.5, arrowCenterY);
+              ctx.lineTo(arrowCenterX + arrowSize * 0.2, arrowCenterY + arrowSize * 0.4);
+              ctx.stroke();
+            } else {
+              // Draw NULL for last node
+              ctx.fillStyle = '#9CA3AF';
+              ctx.font = `${Math.max(8, nodeHeight * 0.25)}px Kalam, cursive`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('NULL', arrowCenterX, arrowCenterY);
+            }
+          }
+        }
+        break;
     }
 
     // Draw selection box
@@ -1070,6 +1146,26 @@ export function DrawingCanvas() {
         opacity,
         lineStyle,
         text: '', // Can add values like: "1,2,3,4,5"
+        fontSize: 14,
+      };
+      setCurrentElement(element);
+      return;
+    }
+    
+    // Handle Linked List tool
+    if (activeTool === 'linked-list') {
+      setIsDrawing(true);
+      setStartPoint(point);
+      const element: DrawingElement = {
+        id: Date.now().toString() + Math.random(),
+        type: 'linked-list',
+        points: [point],
+        color: strokeColor,
+        strokeWidth,
+        fillColor,
+        opacity,
+        lineStyle,
+        text: '', // Node value
         fontSize: 14,
       };
       setCurrentElement(element);
