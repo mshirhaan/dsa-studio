@@ -71,6 +71,9 @@ interface StoreActions {
   updateProblemNotes: (topicId: string, problemId: string, notes: string) => void;
   incrementProblemAttempts: (topicId: string, problemId: string) => void;
   updateProblemCommitInfo: (topicId: string, problemId: string, commitInfo: { githubCommitUrl: string; solutionFileName: string; commitSha: string; completedDate?: number }) => void;
+  
+  // Teaching mode actions
+  setTeachingMode: (mode: 'teaching' | 'qa' | 'break') => void;
 }
 
 const defaultCodeFile: CodeFile = {
@@ -134,6 +137,9 @@ const initialState: AppState = {
   // Roadmap
   roadmapTopics: defaultRoadmapTopics,
   showRoadmap: false,
+  
+  // Teaching mode
+  teachingMode: 'teaching' as 'teaching' | 'qa' | 'break',
 };
 
 export const useStore = create<AppState & StoreActions>((set, get) => ({
@@ -588,6 +594,9 @@ export const useStore = create<AppState & StoreActions>((set, get) => ({
         : topic
     ),
   })),
+  
+  // Teaching mode actions
+  setTeachingMode: (mode) => set({ teachingMode: mode }),
 }));
 
 // Load saved sessions on init

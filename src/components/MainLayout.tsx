@@ -21,6 +21,7 @@ import { ShortcutsPanel } from './ShortcutsPanel';
 import { TemplatesPanel } from './TemplatesPanel';
 import { SlideNavigation } from './SlideNavigation';
 import { RoadmapPanel } from './RoadmapPanel';
+import TeachingModeIndicator from './TeachingModeIndicator';
 import { useState, useRef, useEffect } from 'react';
 
 export function MainLayout() {
@@ -111,13 +112,18 @@ export function MainLayout() {
       <div className="h-screen flex flex-col bg-gray-900 text-white">
       {/* Top Header */}
       <header className="flex items-center justify-between px-6 py-3 bg-gray-800 border-b border-gray-700">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Layers className="text-blue-500" size={24} />
-            <h1 className="text-xl font-bold">DSA Studio</h1>
-          </div>
+        {/* Left side - Logo */}
+        <div className="flex items-center gap-2">
+          <Layers className="text-blue-500" size={24} />
+          <h1 className="text-xl font-bold">DSA Studio</h1>
+        </div>
+        
+        {/* Center - Teaching Mode Indicator */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <TeachingModeIndicator />
         </div>
 
+        {/* Right side - Buttons */}
         <div className="flex items-center gap-2">
           {/* View Mode Buttons */}
           <div className="flex gap-1 bg-gray-700 rounded p-1">

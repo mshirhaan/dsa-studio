@@ -132,6 +132,9 @@ export interface AppState {
   // Roadmap
   roadmapTopics: RoadmapTopic[];
   showRoadmap: boolean;
+  
+  // Teaching mode
+  teachingMode: 'teaching' | 'qa' | 'break';
 }
 
 // Roadmap types
