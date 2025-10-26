@@ -1532,7 +1532,7 @@ export function DrawingCanvas() {
           onChange={(e) => setTextEdit({ ...textEdit, text: e.target.value })}
           onKeyDown={handleTextKeyDown}
           autoFocus
-          className="absolute bg-transparent outline-none resize-none overflow-hidden"
+          className="absolute bg-transparent outline-none resize-none overflow-hidden scrollbar-hide"
           style={{
             left: `${textEdit.canvasPoint.x * zoom + panOffset.x}px`,
             top: `${textEdit.canvasPoint.y * zoom + panOffset.y}px`,
@@ -1541,7 +1541,7 @@ export function DrawingCanvas() {
             minWidth: `${200 * zoom}px`, // Scale min width with zoom
             height: 'auto', // Auto height based on content
             maxHeight: '80vh', // Max height to prevent going off screen
-            overflowY: 'auto', // Scroll if exceeds max height
+            overflowY: 'auto', // Scroll if exceeds max height (hidden with CSS)
             zIndex: 100000,
             border: 'none',
             padding: 0,
