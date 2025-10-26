@@ -1061,9 +1061,9 @@ export function DrawingCanvas() {
           
           return {
             x: element.points[0].x - 5,
-            y: element.points[0].y - 5, // Match the textarea top position
+            y: element.points[0].y - 5,
             width: maxWidth + 10,
-            height: textHeight + fontSize + 10, // Add fontSize for baseline offset
+            height: textHeight + 10, // Remove extra fontSize padding
           };
         }
       }
