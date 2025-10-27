@@ -38,6 +38,8 @@ export function CodeEditor() {
   const startHeight = useRef(0);
   const [editingFileId, setEditingFileId] = useState<string | null>(null);
   const [editingFileName, setEditingFileName] = useState('');
+  const runIdRef = useRef(0); // Track execution runs to ignore stale ones
+  const abortControllerRef = useRef<AbortController | null>(null); // For canceling API calls
   
   // Helper function to detect language from file extension
   const getLanguageFromExtension = (filename: string): 'javascript' | 'python' | 'cpp' | 'java' | 'typescript' => {
@@ -97,9 +99,14 @@ export function CodeEditor() {
   useEffect(() => {
     if (!autoRun || !activeFile) return;
     
+    // Cancel any pending execution
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
     const timeoutId = setTimeout(() => {
       handleRun();
-    }, 100); // 500ms debounce
+    }, 800); // 800ms debounce for typing
     
     return () => clearTimeout(timeoutId);
   }, [activeFile?.content, autoRun]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -120,6 +127,15 @@ export function CodeEditor() {
   const handleRun = async () => {
     if (!activeFile || isRunning) return;
     
+    // Cancel any ongoing API call
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Increment run ID to track this execution
+    runIdRef.current += 1;
+    const currentRunId = runIdRef.current;
+    
     setIsRunning(true);
     clearConsole();
     
@@ -129,6 +145,7 @@ export function CodeEditor() {
         // Create a custom console
         const customConsole = {
           log: (...args: any[]) => {
+            if (currentRunId !== runIdRef.current) return; // Ignore if stale
             addConsoleOutput({
               type: 'log',
               content: args.map(arg => 
@@ -137,18 +154,21 @@ export function CodeEditor() {
             });
           },
           error: (...args: any[]) => {
+            if (currentRunId !== runIdRef.current) return; // Ignore if stale
             addConsoleOutput({
               type: 'error',
               content: args.map(arg => String(arg)).join(' '),
             });
           },
           warn: (...args: any[]) => {
+            if (currentRunId !== runIdRef.current) return; // Ignore if stale
             addConsoleOutput({
               type: 'warn',
               content: args.map(arg => String(arg)).join(' '),
             });
           },
           info: (...args: any[]) => {
+            if (currentRunId !== runIdRef.current) return; // Ignore if stale
             addConsoleOutput({
               type: 'info',
               content: args.map(arg => String(arg)).join(' '),
@@ -165,13 +185,24 @@ export function CodeEditor() {
         const fn = eval(sandboxedCode);
         fn(customConsole);
         
-        addConsoleOutput({
-          type: 'info',
-          content: '✓ Execution completed successfully',
-        });
+        // Only show success if this is still the current run
+        if (currentRunId === runIdRef.current) {
+          addConsoleOutput({
+            type: 'info',
+            content: '✓ Execution completed successfully',
+          });
+        }
       } else {
         // Use Piston API for other languages (Python, Java, C++)
+        // Create new abort controller for this request
+        abortControllerRef.current = new AbortController();
+        
         const result = await executeCode(activeFile.language, activeFile.content);
+        
+        // Check if this run is still current (not superseded by a newer run)
+        if (currentRunId !== runIdRef.current) {
+          return; // Ignore stale results
+        }
         
         // Display stdout
         if (result.run.stdout) {
@@ -203,12 +234,19 @@ export function CodeEditor() {
         }
       }
     } catch (error: any) {
-      addConsoleOutput({
-        type: 'error',
-        content: `Error: ${error.message}`,
-      });
+      // Only show error if this is still the current run and not aborted
+      if (currentRunId === runIdRef.current && error.name !== 'AbortError') {
+        addConsoleOutput({
+          type: 'error',
+          content: `Error: ${error.message}`,
+        });
+      }
     } finally {
-      setIsRunning(false);
+      // Only clear running state if this is still the current run
+      if (currentRunId === runIdRef.current) {
+        setIsRunning(false);
+        abortControllerRef.current = null;
+      }
     }
   };
 
