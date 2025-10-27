@@ -198,7 +198,43 @@ export function CodeEditor() {
         // Create new abort controller for this request
         abortControllerRef.current = new AbortController();
         
-        const result = await executeCode(activeFile.language, activeFile.content);
+        // Retry logic with exponential backoff for rate limiting
+        let result;
+        let retryCount = 0;
+        const maxRetries = 3;
+        
+        while (retryCount <= maxRetries) {
+          try {
+            result = await executeCode(activeFile.language, activeFile.content);
+            break; // Success, exit retry loop
+          } catch (error: any) {
+            // Check if still current run
+            if (currentRunId !== runIdRef.current) {
+              return; // Ignore stale results
+            }
+            
+            // Check if it's a rate limit error
+            if (error.message && error.message.includes('Too Many Requests') && retryCount < maxRetries) {
+              retryCount++;
+              const waitTime = Math.pow(2, retryCount) * 500; // 1s, 2s, 4s
+              
+              addConsoleOutput({
+                type: 'warn',
+                content: `⏳ Rate limited, retrying in ${waitTime/1000}s... (attempt ${retryCount}/${maxRetries})`,
+              });
+              
+              // Wait before retrying
+              await new Promise(resolve => setTimeout(resolve, waitTime));
+              
+              // Check again if still current after waiting
+              if (currentRunId !== runIdRef.current) {
+                return; // Ignore if superseded
+              }
+            } else {
+              throw error; // Re-throw if not rate limit or max retries reached
+            }
+          }
+        }
         
         // Check if this run is still current (not superseded by a newer run)
         if (currentRunId !== runIdRef.current) {
@@ -206,45 +242,49 @@ export function CodeEditor() {
         }
         
         // Display stdout
-        if (result.run.stdout) {
+        if (result!.run.stdout) {
           addConsoleOutput({
             type: 'log',
-            content: result.run.stdout,
+            content: result!.run.stdout,
           });
         }
         
         // Display stderr
-        if (result.run.stderr) {
+        if (result!.run.stderr) {
           addConsoleOutput({
             type: 'error',
-            content: result.run.stderr,
+            content: result!.run.stderr,
           });
         }
         
         // Display exit code
-        if (result.run.code === 0) {
+        if (result!.run.code === 0) {
           addConsoleOutput({
             type: 'info',
-            content: `✓ Execution completed successfully (exit code: ${result.run.code})`,
+            content: `✓ Execution completed successfully (exit code: ${result!.run.code})`,
           });
         } else {
           addConsoleOutput({
             type: 'error',
-            content: `✗ Execution failed (exit code: ${result.run.code})`,
+            content: `✗ Execution failed (exit code: ${result!.run.code})`,
           });
         }
       }
     } catch (error: any) {
       // Only show error if this is still the current run and not aborted
       if (currentRunId === runIdRef.current && error.name !== 'AbortError') {
-        // Don't show "Too Many Requests" errors (429) from Piston API
+        // Show rate limit error if max retries reached
         if (error.message && error.message.includes('Too Many Requests')) {
-          return; // Silently ignore rate limit errors
+          addConsoleOutput({
+            type: 'error',
+            content: '✗ Rate limit exceeded. Please wait a moment and try again.',
+          });
+        } else {
+          addConsoleOutput({
+            type: 'error',
+            content: `Error: ${error.message}`,
+          });
         }
-        addConsoleOutput({
-          type: 'error',
-          content: `Error: ${error.message}`,
-        });
       }
     } finally {
       // Only clear running state if this is still the current run
