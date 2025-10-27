@@ -106,7 +106,7 @@ export function CodeEditor() {
     
     const timeoutId = setTimeout(() => {
       handleRun();
-    }, 100); // 100ms debounce for fast feedback
+    }, 1000); // 1000ms debounce to avoid API rate limits
     
     return () => clearTimeout(timeoutId);
   }, [activeFile?.content, autoRun]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -237,6 +237,10 @@ export function CodeEditor() {
     } catch (error: any) {
       // Only show error if this is still the current run and not aborted
       if (currentRunId === runIdRef.current && error.name !== 'AbortError') {
+        // Don't show "Too Many Requests" errors (429) from Piston API
+        if (error.message && error.message.includes('Too Many Requests')) {
+          return; // Silently ignore rate limit errors
+        }
         addConsoleOutput({
           type: 'error',
           content: `Error: ${error.message}`,
