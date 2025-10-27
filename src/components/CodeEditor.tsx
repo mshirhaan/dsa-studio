@@ -125,7 +125,7 @@ export function CodeEditor() {
   };
 
   const handleRun = async () => {
-    if (!activeFile || isRunning) return;
+    if (!activeFile) return;
     
     // Cancel any ongoing API call
     if (abortControllerRef.current) {
@@ -136,8 +136,9 @@ export function CodeEditor() {
     runIdRef.current += 1;
     const currentRunId = runIdRef.current;
     
-    setIsRunning(true);
+    // Clear console for new run
     clearConsole();
+    setIsRunning(true);
     
     try {
       // Check if it's JavaScript/TypeScript (run locally)
