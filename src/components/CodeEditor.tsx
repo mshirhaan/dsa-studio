@@ -106,7 +106,7 @@ export function CodeEditor() {
     
     const timeoutId = setTimeout(() => {
       handleRun();
-    }, 800); // 800ms debounce for typing
+    }, 100); // 100ms debounce for fast feedback
     
     return () => clearTimeout(timeoutId);
   }, [activeFile?.content, autoRun]); // eslint-disable-line react-hooks/exhaustive-deps
