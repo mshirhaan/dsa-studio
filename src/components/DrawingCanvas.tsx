@@ -1380,18 +1380,30 @@ export function DrawingCanvas() {
       // If there's an existing text edit, save it first
       if (textEdit) {
         if (textEdit.text.trim()) {
-          const element: DrawingElement = {
-            id: Date.now().toString() + Math.random(),
-            type: 'text',
-            points: [textEdit.canvasPoint],
-            color: strokeColor,
-            strokeWidth,
-            opacity,
-            lineStyle,
-            text: textEdit.text,
-            fontSize: textEdit.fontSize || 28, // Use preserved fontSize
-          };
-          addDrawingElement(element);
+          // Check if we're editing a DSA element
+          if (currentElement && ['array', 'linked-list', 'tree', 'hashmap', 'matrix', 'graph-node'].includes(currentElement.type)) {
+            // Recreate the DSA element with new text
+            const updatedElement: DrawingElement = {
+              ...currentElement,
+              text: textEdit.text,
+            };
+            addDrawingElement(updatedElement);
+            setCurrentElement(null);
+          } else {
+            // Regular text element
+            const element: DrawingElement = {
+              id: Date.now().toString() + Math.random(),
+              type: 'text',
+              points: [textEdit.canvasPoint],
+              color: strokeColor,
+              strokeWidth,
+              opacity,
+              lineStyle,
+              text: textEdit.text,
+              fontSize: textEdit.fontSize || 28, // Use preserved fontSize
+            };
+            addDrawingElement(element);
+          }
         }
         // Close text edit mode and switch to select tool
         setTextEdit(null);
@@ -1425,7 +1437,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Can add values like: "1,2,3,4,5"
+        text: '1,2,3,4,5', // Default placeholder values
         fontSize: 14,
       };
       setCurrentElement(element);
@@ -1445,7 +1457,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Node value
+        text: '1,2,3,4', // Default node values
         fontSize: 14,
       };
       setCurrentElement(element);
@@ -1465,7 +1477,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Node values (comma-separated, level-order)
+        text: '1,2,3,4,5,6,7', // Default tree values (level-order)
         fontSize: 14,
       };
       setCurrentElement(element);
@@ -1485,7 +1497,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Entries: "key:value,key:value" or "value,value"
+        text: '', // Empty - will show null by default
         fontSize: 14,
       };
       setCurrentElement(element);
@@ -1505,7 +1517,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Values: comma-separated, row by row
+        text: '1,2,3,4,5,6,7,8,9', // Default matrix values (row by row)
         fontSize: 14,
       };
       setCurrentElement(element);
@@ -1523,7 +1535,7 @@ export function DrawingCanvas() {
         fillColor,
         opacity,
         lineStyle,
-        text: '', // Node label/value
+        text: 'A', // Default node label
         fontSize: 14,
       };
       addDrawingElement(element);
@@ -1864,42 +1876,75 @@ export function DrawingCanvas() {
   const handleDoubleClick = (e: MouseEvent<HTMLCanvasElement>) => {
     const point = getMousePos(e);
     
-    // Check if we double-clicked on an existing text element
+    // Check if we double-clicked on an existing element
     for (let i = drawingElements.length - 1; i >= 0; i--) {
       const element = drawingElements[i];
       
-      // Only handle text elements
-      if (element.type !== 'text') continue;
+      // Handle text elements
+      if (element.type === 'text') {
+        const bounds = getElementBounds(element);
+        
+        if (
+          point.x >= bounds.x &&
+          point.x <= bounds.x + bounds.width &&
+          point.y >= bounds.y &&
+          point.y <= bounds.y + bounds.height
+        ) {
+          // Switch to text tool
+          setActiveTool('text');
+          
+          // Found a text element - enable editing with preserved fontSize
+          setTextEdit({
+            canvasPoint: element.points[0],
+            text: element.text || '',
+            fontSize: element.fontSize || 28
+          });
+          
+          // Delete the old text element
+          deleteDrawingElements([element.id]);
+          
+          // Mark that we just created the textarea
+          justCreatedTextarea.current = true;
+          
+          return;
+        }
+      }
       
-      const bounds = getElementBounds(element);
-      
-      if (
-        point.x >= bounds.x &&
-        point.x <= bounds.x + bounds.width &&
-        point.y >= bounds.y &&
-        point.y <= bounds.y + bounds.height
-      ) {
-        // Switch to text tool
-        setActiveTool('text');
+      // Handle DSA elements (array, linked-list, tree, hashmap, matrix, graph-node)
+      if (['array', 'linked-list', 'tree', 'hashmap', 'matrix', 'graph-node'].includes(element.type)) {
+        const bounds = getElementBounds(element);
         
-        // Found a text element - enable editing with preserved fontSize
-        setTextEdit({
-          canvasPoint: element.points[0],
-          text: element.text || '',
-          fontSize: element.fontSize || 28
-        });
-        
-        // Delete the old text element
-        deleteDrawingElements([element.id]);
-        
-        // Mark that we just created the textarea
-        justCreatedTextarea.current = true;
-        
-        return;
+        if (
+          point.x >= bounds.x &&
+          point.x <= bounds.x + bounds.width &&
+          point.y >= bounds.y &&
+          point.y <= bounds.y + bounds.height
+        ) {
+          // Switch to text tool
+          setActiveTool('text');
+          
+          // Enable editing of DSA element text
+          setTextEdit({
+            canvasPoint: { x: bounds.x + bounds.width / 2 - 50, y: bounds.y - 40 }, // Position above element
+            text: element.text || '',
+            fontSize: 16
+          });
+          
+          // Delete the old DSA element
+          deleteDrawingElements([element.id]);
+          
+          // Store the element so we can recreate it with new text
+          setCurrentElement(element);
+          
+          // Mark that we just created the textarea
+          justCreatedTextarea.current = true;
+          
+          return;
+        }
       }
     }
     
-    // No text element found - create new text at double-click position
+    // No element found - create new text at double-click position
     // Automatically switch to text tool and start editing
     setActiveTool('text');
     setTextEdit({
