@@ -136,6 +136,15 @@ export function CodeEditor() {
     runIdRef.current += 1;
     const currentRunId = runIdRef.current;
     
+    // Snapshot the code content at the start of execution
+    const codeSnapshot = activeFile.content;
+    
+    // Helper to check if code has changed since execution started
+    const hasCodeChanged = () => {
+      const currentFile = codeFiles.find(f => f.id === activeFileId);
+      return !currentFile || currentFile.content !== codeSnapshot || currentRunId !== runIdRef.current;
+    };
+    
     // Clear console for new run
     clearConsole();
     setIsRunning(true);
@@ -146,7 +155,7 @@ export function CodeEditor() {
         // Create a custom console
         const customConsole = {
           log: (...args: any[]) => {
-            if (currentRunId !== runIdRef.current) return; // Ignore if stale
+            if (hasCodeChanged()) return; // Ignore if code changed
             addConsoleOutput({
               type: 'log',
               content: args.map(arg => 
@@ -155,21 +164,21 @@ export function CodeEditor() {
             });
           },
           error: (...args: any[]) => {
-            if (currentRunId !== runIdRef.current) return; // Ignore if stale
+            if (hasCodeChanged()) return; // Ignore if code changed
             addConsoleOutput({
               type: 'error',
               content: args.map(arg => String(arg)).join(' '),
             });
           },
           warn: (...args: any[]) => {
-            if (currentRunId !== runIdRef.current) return; // Ignore if stale
+            if (hasCodeChanged()) return; // Ignore if code changed
             addConsoleOutput({
               type: 'warn',
               content: args.map(arg => String(arg)).join(' '),
             });
           },
           info: (...args: any[]) => {
-            if (currentRunId !== runIdRef.current) return; // Ignore if stale
+            if (hasCodeChanged()) return; // Ignore if code changed
             addConsoleOutput({
               type: 'info',
               content: args.map(arg => String(arg)).join(' '),
@@ -186,8 +195,8 @@ export function CodeEditor() {
         const fn = eval(sandboxedCode);
         fn(customConsole);
         
-        // Only show success if this is still the current run
-        if (currentRunId === runIdRef.current) {
+        // Only show success if code hasn't changed
+        if (!hasCodeChanged()) {
           addConsoleOutput({
             type: 'info',
             content: '✓ Execution completed successfully',
@@ -208,8 +217,8 @@ export function CodeEditor() {
             result = await executeCode(activeFile.language, activeFile.content);
             break; // Success, exit retry loop
           } catch (error: any) {
-            // Check if still current run
-            if (currentRunId !== runIdRef.current) {
+            // Check if code changed
+            if (hasCodeChanged()) {
               return; // Ignore stale results
             }
             
@@ -217,6 +226,9 @@ export function CodeEditor() {
             if (error.message && error.message.includes('Too Many Requests') && retryCount < maxRetries) {
               retryCount++;
               const waitTime = Math.pow(2, retryCount) * 500; // 1s, 2s, 4s
+              
+              // Check again before showing warning
+              if (hasCodeChanged()) return;
               
               addConsoleOutput({
                 type: 'warn',
@@ -226,8 +238,8 @@ export function CodeEditor() {
               // Wait before retrying
               await new Promise(resolve => setTimeout(resolve, waitTime));
               
-              // Check again if still current after waiting
-              if (currentRunId !== runIdRef.current) {
+              // Check again if code changed during wait
+              if (hasCodeChanged()) {
                 return; // Ignore if superseded
               }
             } else {
@@ -236,8 +248,8 @@ export function CodeEditor() {
           }
         }
         
-        // Check if this run is still current (not superseded by a newer run)
-        if (currentRunId !== runIdRef.current) {
+        // Final check: only display if code hasn't changed
+        if (hasCodeChanged()) {
           return; // Ignore stale results
         }
         
@@ -271,8 +283,8 @@ export function CodeEditor() {
         }
       }
     } catch (error: any) {
-      // Only show error if this is still the current run and not aborted
-      if (currentRunId === runIdRef.current && error.name !== 'AbortError') {
+      // Only show error if code hasn't changed and not aborted
+      if (!hasCodeChanged() && error.name !== 'AbortError') {
         // Show rate limit error if max retries reached
         if (error.message && error.message.includes('Too Many Requests')) {
           addConsoleOutput({
