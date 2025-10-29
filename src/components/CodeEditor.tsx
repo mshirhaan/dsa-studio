@@ -365,6 +365,24 @@ export function CodeEditor() {
     }
   };
 
+  const handleLanguageChange = (newLanguage: 'javascript' | 'python' | 'cpp' | 'java' | 'typescript') => {
+    if (!activeFile) return;
+    
+    const extensions: Record<string, string> = {
+      javascript: 'js',
+      python: 'py',
+      cpp: 'cpp',
+      java: 'java',
+      typescript: 'ts',
+    };
+    
+    const ext = extensions[newLanguage];
+    const baseName = activeFile.name.split('.')[0]; // Get name without extension
+    const newFileName = `${baseName}.${ext}`;
+    
+    renameCodeFile(activeFile.id, newFileName, newLanguage);
+  };
+
   return (
     <div className="h-full flex flex-col bg-gray-900">
       {/* Toolbar */}
@@ -425,6 +443,22 @@ export function CodeEditor() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2">
+          {/* Language selector */}
+          <select
+            value={activeFile?.language || 'javascript'}
+            onChange={(e) => handleLanguageChange(e.target.value as any)}
+            className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-sm transition-colors cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+            title="Select language"
+          >
+            <option value="javascript">JavaScript</option>
+            <option value="typescript">TypeScript</option>
+            <option value="python">Python</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+          </select>
+
+          <div className="w-px h-6 bg-gray-600" />
+
           {/* Zoom controls */}
           <div className="flex items-center gap-1 px-2 py-1 bg-gray-700 rounded">
             <button
