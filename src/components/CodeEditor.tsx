@@ -32,6 +32,7 @@ export function CodeEditor() {
 
   const activeFile = codeFiles.find(f => f.id === activeFileId);
   const consoleRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<any>(null); // Monaco editor instance
   const [consoleHeight, setConsoleHeight] = useState(192); // 192px = h-48
   const [isResizing, setIsResizing] = useState(false);
   const resizeStartY = useRef(0);
@@ -548,6 +549,83 @@ export function CodeEditor() {
               value={activeFile.content}
               theme={editorTheme}
               onChange={(value) => updateCodeFile(activeFile.id, value || '')}
+              onMount={(editor) => {
+                editorRef.current = editor;
+                
+                // Add context menu action for printing variables
+                editor.addAction({
+                  id: 'print-variable',
+                  label: 'Print Variable',
+                  contextMenuGroupId: 'navigation',
+                  contextMenuOrder: 1.5,
+                  keybindings: [],
+                  run: function(ed) {
+                    const model = ed.getModel();
+                    if (!model) return;
+                    
+                    // Get current language dynamically from the model
+                    const currentLanguage = model.getLanguageId();
+                    
+                    const selection = ed.getSelection();
+                    if (!selection) return;
+                    
+                    // Get the word at cursor or selected text
+                    const position = ed.getPosition();
+                    if (!position) return;
+                    
+                    let wordToLog = model.getValueInRange(selection);
+                    
+                    // If nothing selected, get word at cursor
+                    if (!wordToLog || wordToLog.trim() === '') {
+                      const wordAtPosition = model.getWordAtPosition(position);
+                      if (wordAtPosition) {
+                        wordToLog = wordAtPosition.word;
+                      }
+                    }
+                    
+                    if (!wordToLog || wordToLog.trim() === '') return;
+                    
+                    const varName = wordToLog.trim();
+                    
+                    // Get print statement for current language with proper syntax
+                    const printStatements: Record<string, (text: string) => string> = {
+                      javascript: (text) => `console.log('${text}:', ${text});`,
+                      typescript: (text) => `console.log('${text}:', ${text});`,
+                      python: (text) => `print(f'${text}: {${text}}')`,
+                      java: (text) => `System.out.println("${text}: " + ${text});`,
+                      cpp: (text) => `std::cout << "${text}: " << ${text} << std::endl;`,
+                    };
+                    
+                    const printStatement = printStatements[currentLanguage as keyof typeof printStatements] 
+                      || printStatements['javascript']; // fallback
+                    
+                    const finalStatement = printStatement(varName);
+                    
+                    // Find end of current line and insert there
+                    const lineNumber = position.lineNumber;
+                    const lineContent = model.getLineContent(lineNumber);
+                    const lineLength = lineContent.length;
+                    
+                    ed.executeEdits('', [
+                      {
+                        range: {
+                          startLineNumber: lineNumber,
+                          startColumn: lineLength + 1,
+                          endLineNumber: lineNumber,
+                          endColumn: lineLength + 1,
+                        },
+                        text: '\n' + finalStatement,
+                      },
+                    ]);
+                    
+                    // Move cursor to end of inserted text
+                    ed.setPosition({
+                      lineNumber: lineNumber + 1,
+                      column: finalStatement.length + 1,
+                    });
+                  }
+                });
+              }}
               options={{
                 fontSize,
                 minimap: { enabled: false },
