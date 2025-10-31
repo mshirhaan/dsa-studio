@@ -5,6 +5,7 @@ import { useStore } from '@/store/useStore';
 import { X, ChevronDown, ChevronRight, ExternalLink, CheckCircle2, Circle, Clock, GitCommit, Github, Edit3 } from 'lucide-react';
 import { Problem, RoadmapTopic } from '@/types';
 import CommitSolutionModal from './CommitSolutionModal';
+import { loadGitConfig, updateSolutionsFile } from '@/lib/gitUtils';
 
 export function RoadmapPanel() {
   const { roadmapTopics, showRoadmap, setShowRoadmap, updateProblemStatus, updateProblemNotes, updateProblemCommitInfo } = useStore();
@@ -69,7 +70,7 @@ export function RoadmapPanel() {
     }
   };
   
-  const handleManualEntry = () => {
+  const handleManualEntry = async () => {
     if (!selectedProblem || !manualGithubUrl.trim()) return;
     
     // Extract commit SHA from GitHub URL if possible
@@ -85,12 +86,46 @@ export function RoadmapPanel() {
       }
     }
     
+    // Update problem with commit info
     updateProblemCommitInfo(selectedProblem.topicId, selectedProblem.problem.id, {
       githubCommitUrl: manualGithubUrl.trim(),
       solutionFileName: manualFileName.trim() || 'solution',
       commitSha,
       completedDate,
     });
+    
+    // Update SOLUTIONS.md if git config is available
+    const gitConfig = loadGitConfig();
+    if (gitConfig) {
+      try {
+        // Create updated topics array with the new commit info
+        const updatedTopics = roadmapTopics.map(t => 
+          t.id === selectedProblem.topicId
+            ? {
+                ...t,
+                problems: t.problems.map(p =>
+                  p.id === selectedProblem.problem.id
+                    ? {
+                        ...p,
+                        githubCommitUrl: manualGithubUrl.trim(),
+                        solutionFileName: manualFileName.trim() || 'solution',
+                        commitSha,
+                        status: 'completed' as const,
+                        completedDate,
+                      }
+                    : p
+                ),
+              }
+            : t
+        );
+        
+        // Update SOLUTIONS.md
+        await updateSolutionsFile(gitConfig, updatedTopics);
+      } catch (error) {
+        console.error('Failed to update SOLUTIONS.md:', error);
+        // Don't block the UI, just log the error
+      }
+    }
     
     // Reset form
     setManualGithubUrl('');
