@@ -63,6 +63,35 @@ export async function commitFileToGitHub(params: CommitFileParams): Promise<Comm
     const commitData = await commitResponse.json();
     const baseTreeSha = commitData.tree.sha;
     
+    // Step 2.5: Check if file exists and compare content
+    try {
+      const fileResponse = await fetch(`${repoUrl}/contents/${fileName}?ref=${branch}`, {
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      });
+      
+      if (fileResponse.ok) {
+        const fileData = await fileResponse.json();
+        // Decode existing content from base64
+        const existingContent = atob(fileData.content.replace(/\n/g, ''));
+        
+        // If content is identical, skip commit
+        if (existingContent === fileContent) {
+          return {
+            success: true,
+            commitSha: currentCommitSha,
+            commitUrl: `https://github.com/${username}/${repo}/commit/${currentCommitSha}`,
+            error: 'No changes detected - file content is identical',
+          };
+        }
+      }
+      // If file doesn't exist (404), continue to create it
+    } catch (error) {
+      // Continue - file might not exist, which is fine
+    }
+    
     // Step 3: Create a blob for the file content
     const blobResponse = await fetch(`${repoUrl}/git/blobs`, {
       method: 'POST',
